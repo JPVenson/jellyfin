@@ -1,9 +1,11 @@
 using System;
 using System.Diagnostics;
+using System.Globalization;
+using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-namespace MediaBrowser.Common.SharedStringBuilder;
+namespace Jellyfin.Extensions.SharedStringBuilder;
 
 /// <summary>
 /// A string builder shim that lives on the stack.
@@ -29,9 +31,23 @@ public ref partial struct ValueStringBuilder
     /// Initializes a new instance of the <see cref="ValueStringBuilder"/> struct.
     /// </summary>
     /// <param name="initialCapacity">The initial capacity of the builder.</param>
-    public ValueStringBuilder(int initialCapacity)
+    public ValueStringBuilder(int initialCapacity = 256)
     {
         _arrayToReturnToPool = System.Buffers.ArrayPool<char>.Shared.Rent(initialCapacity);
+        _chars = _arrayToReturnToPool;
+        _pos = 0;
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ValueStringBuilder"/> struct.
+    /// </summary>
+    /// <param name="initialBuffer">The initial contents of the new builder.</param>
+    /// <param name="initialCapacity">The initial capacity of the builder.</param>
+    public ValueStringBuilder(ReadOnlySpan<char> initialBuffer, int initialCapacity)
+    {
+        Debug.Assert(initialBuffer.Length > initialCapacity, "Cannot create an buffer with an capacity smaller then the initial buffer.");
+        _arrayToReturnToPool = System.Buffers.ArrayPool<char>.Shared.Rent(initialCapacity);
+        initialBuffer.CopyTo(_arrayToReturnToPool);
         _chars = _arrayToReturnToPool;
         _pos = 0;
     }
@@ -122,7 +138,7 @@ public ref partial struct ValueStringBuilder
     /// <returns>a new <see cref="string"/> containing the contents of the builder.</returns>
     public override string ToString()
     {
-        string s = _chars.Slice(0, _pos).ToString();
+        var s = _chars.Slice(0, _pos).ToString();
         Dispose();
         return s;
     }
@@ -208,7 +224,7 @@ public ref partial struct ValueStringBuilder
             Grow(count);
         }
 
-        int remaining = _pos - index;
+        var remaining = _pos - index;
         _chars.Slice(index, remaining).CopyTo(_chars.Slice(index + count));
         _chars.Slice(index, count).Fill(value);
         _pos += count;
@@ -226,14 +242,14 @@ public ref partial struct ValueStringBuilder
             return;
         }
 
-        int count = s.Length;
+        var count = s.Length;
 
-        if (_pos > (_chars.Length - count))
+        if (_pos > _chars.Length - count)
         {
             Grow(count);
         }
 
-        int remaining = _pos - index;
+        var remaining = _pos - index;
         _chars.Slice(index, remaining).CopyTo(_chars.Slice(index + count));
         s.AsSpan().CopyTo(_chars.Slice(index));
         _pos += count;
@@ -243,10 +259,11 @@ public ref partial struct ValueStringBuilder
     /// Appends the given character to its cache.
     /// </summary>
     /// <param name="c">The character.</param>
+    /// <returns>The Builder.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Append(char c)
+    public ValueStringBuilder Append(char c)
     {
-        int pos = _pos;
+        var pos = _pos;
 
         if ((uint)pos < (uint)_chars.Length)
         {
@@ -257,21 +274,58 @@ public ref partial struct ValueStringBuilder
         {
             GrowAndAppend(c);
         }
+
+        return this;
+    }
+
+    /// <summary>
+    /// Appends the given character to its cache.
+    /// </summary>
+    /// <param name="number">The number to add.</param>
+    /// <typeparam name="T">The type of number.</typeparam>
+    /// <returns>The Builder.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public ValueStringBuilder Append<T>(T number)
+        where T : INumber<T>
+    {
+        if (number == null)
+        {
+            return this;
+        }
+
+        return Append(number.ToString()!);
+    }
+
+    /// <summary>
+    /// Appends the given character to its cache.
+    /// </summary>
+    /// <param name="obj">The object to add.</param>
+    /// <returns>The Builder.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public ValueStringBuilder Append(object obj)
+    {
+        if (obj == null)
+        {
+            return this;
+        }
+
+        return Append(obj.ToString()!);
     }
 
     /// <summary>
     /// Appends the given string in its cache.
     /// </summary>
     /// <param name="s">The string.</param>
+    /// <returns>The builder.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Append(string s)
+    public ValueStringBuilder Append(string s)
     {
         if (s == null)
         {
-            return;
+            return this;
         }
 
-        int pos = _pos;
+        var pos = _pos;
 
         if (s.Length == 1 &&
             (uint)pos < (uint)_chars
@@ -284,11 +338,13 @@ public ref partial struct ValueStringBuilder
         {
             AppendSlow(s);
         }
+
+        return this;
     }
 
     private void AppendSlow(string s)
     {
-        int pos = _pos;
+        var pos = _pos;
 
         if (pos > _chars.Length - s.Length)
         {
@@ -311,9 +367,9 @@ public ref partial struct ValueStringBuilder
             Grow(count);
         }
 
-        Span<char> dst = _chars.Slice(_pos, count);
+        var dst = _chars.Slice(_pos, count);
 
-        for (int i = 0; i < dst.Length; i++)
+        for (var i = 0; i < dst.Length; i++)
         {
             dst[i] = c;
         }
@@ -327,7 +383,7 @@ public ref partial struct ValueStringBuilder
     /// <param name="value">The memory to insert.</param>
     public void Append(ReadOnlySpan<char> value)
     {
-        int pos = _pos;
+        var pos = _pos;
 
         if (pos > _chars.Length - value.Length)
         {
@@ -346,7 +402,7 @@ public ref partial struct ValueStringBuilder
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Span<char> AppendSpan(int length)
     {
-        int origPos = _pos;
+        var origPos = _pos;
 
         if (origPos > _chars.Length - length)
         {
@@ -355,6 +411,18 @@ public ref partial struct ValueStringBuilder
 
         _pos = origPos + length;
         return _chars.Slice(origPos, length);
+    }
+
+    /// <summary>
+    /// Appents the given template with its format.
+    /// </summary>
+    /// <param name="culture">The culture to format the string.</param>
+    /// <param name="format">The format string.</param>
+    /// <param name="arg1">The first argument.</param>
+    /// <returns>The builder.</returns>
+    public ValueStringBuilder AppendFormat(CultureInfo culture, string format, string arg1)
+    {
+        return Append(string.Format(culture, format, arg1));
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
@@ -379,12 +447,12 @@ public ref partial struct ValueStringBuilder
         Debug.Assert(_pos > _chars.Length - additionalCapacityBeyondPos, "Grow called incorrectly, no resize is needed.");
 
         // Make sure to let Rent throw an exception if the caller has a bug and the desired capacity is negative
-        char[] poolArray
+        var poolArray
             = System.Buffers.ArrayPool<char>.Shared.Rent((int)Math.Max((uint)(_pos + additionalCapacityBeyondPos), (uint)_chars.Length * 2));
 
         _chars.Slice(0, _pos).CopyTo(poolArray);
 
-        char[] toReturn = _arrayToReturnToPool;
+        var toReturn = _arrayToReturnToPool;
         _chars = _arrayToReturnToPool = poolArray;
 
         if (toReturn != null)

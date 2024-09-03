@@ -11,6 +11,7 @@ using Jellyfin.Api.Extensions;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
+using Jellyfin.Extensions.SharedStringBuilder;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
@@ -143,7 +144,7 @@ public class DynamicHlsHelper
 
         var totalBitrate = (state.OutputAudioBitrate ?? 0) + (state.OutputVideoBitrate ?? 0);
 
-        var builder = new StringBuilder();
+        var builder = AsyncStringBuilderCache.Acquire(2048);
 
         builder.AppendLine("#EXTM3U");
 
@@ -278,7 +279,7 @@ public class DynamicHlsHelper
             AddTrickplay(state, trickplayResolutions, builder, _httpContextAccessor.HttpContext.User);
         }
 
-        return new FileContentResult(Encoding.UTF8.GetBytes(builder.ToString()), MimeTypes.GetMimeType("playlist.m3u8"));
+        return new FileContentResult(Encoding.UTF8.GetBytes(AsyncStringBuilderCache.GetStringAndRelease(builder)), MimeTypes.GetMimeType("playlist.m3u8"));
     }
 
     private StringBuilder AppendPlaylist(StringBuilder builder, StreamState state, string url, int bitrate, string? subtitleGroup)

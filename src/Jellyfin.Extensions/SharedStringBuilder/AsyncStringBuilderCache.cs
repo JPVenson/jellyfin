@@ -1,9 +1,12 @@
 using System.Text;
 using System.Threading;
 
-namespace MediaBrowser.Common.SharedStringBuilder;
+namespace Jellyfin.Extensions.SharedStringBuilder;
 
-internal static class AsyncStringBuilderCache
+/// <summary>
+/// Provides methods for using async optimised string builder.
+/// </summary>
+public static class AsyncStringBuilderCache
 {
     // The value 360 was chosen in discussion with performance experts as a compromise between using
     // as litle memory (per thread) as possible and still covering a large part of short-lived
@@ -21,7 +24,7 @@ internal static class AsyncStringBuilderCache
     {
         if (capacity <= MaxBuilderSize)
         {
-            StringBuilder? sb = _cachedInstance.Value;
+            var sb = _cachedInstance.Value;
 
             if (sb != null)
             {
@@ -29,7 +32,7 @@ internal static class AsyncStringBuilderCache
                 // when the requested size is larger than the current capacity
                 if (capacity <= sb.Capacity)
                 {
-                    AsyncStringBuilderCache._cachedInstance.Value = null!;
+                    _cachedInstance.Value = null!;
                     sb.Clear();
                     return sb;
                 }
@@ -47,7 +50,7 @@ internal static class AsyncStringBuilderCache
     {
         if (sb.Capacity <= MaxBuilderSize)
         {
-            AsyncStringBuilderCache._cachedInstance.Value = sb;
+            _cachedInstance.Value = sb;
         }
     }
 
@@ -58,7 +61,7 @@ internal static class AsyncStringBuilderCache
     /// <returns>The Contents of the <see cref="StringBuilder"/>.</returns>
     public static string GetStringAndRelease(StringBuilder sb)
     {
-        string result = sb.ToString();
+        var result = sb.ToString();
         Release(sb);
         return result;
     }

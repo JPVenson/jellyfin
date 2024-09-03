@@ -16,6 +16,7 @@ using Emby.Server.Implementations.Playlists;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
 using Jellyfin.Extensions.Json;
+using Jellyfin.Extensions.SharedStringBuilder;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
@@ -1011,7 +1012,7 @@ namespace Emby.Server.Implementations.Data
 
         internal static string SerializeProviderIds(Dictionary<string, string> providerIds)
         {
-            StringBuilder str = new StringBuilder();
+            var str = new ValueStringBuilder(512);
             foreach (var i in providerIds)
             {
                 // Ideally we shouldn't need this IsNullOrWhiteSpace check,
@@ -1061,7 +1062,7 @@ namespace Emby.Server.Implementations.Data
                 return null;
             }
 
-            StringBuilder str = new StringBuilder();
+            var str = new ValueStringBuilder();
             foreach (var i in images)
             {
                 if (string.IsNullOrWhiteSpace(i.Path))
@@ -1069,7 +1070,7 @@ namespace Emby.Server.Implementations.Data
                     continue;
                 }
 
-                AppendItemImageInfo(str, i);
+                AppendItemImageInfo(ref str, i);
                 str.Append('|');
             }
 
@@ -1114,7 +1115,7 @@ namespace Emby.Server.Implementations.Data
             return result[..position];
         }
 
-        private void AppendItemImageInfo(StringBuilder bldr, ItemImageInfo image)
+        private void AppendItemImageInfo(ref ValueStringBuilder bldr, ItemImageInfo image)
         {
             const char Delimiter = '*';
 
@@ -1986,8 +1987,8 @@ namespace Emby.Server.Implementations.Data
             var limit = 100;
             var chapterIndex = 0;
 
-            const string StartInsertText = "insert into " + ChaptersTableName + " (ItemId, ChapterIndex, StartPositionTicks, Name, ImagePath, ImageDateModified) values ";
-            var insertText = new StringBuilder(StartInsertText, 256);
+            ReadOnlySpan<char> startInsertText = "insert into " + ChaptersTableName + " (ItemId, ChapterIndex, StartPositionTicks, Name, ImagePath, ImageDateModified) values ";
+            var insertText = new ValueStringBuilder(startInsertText, 256);
 
             while (startIndex < chapters.Count)
             {
@@ -2023,7 +2024,7 @@ namespace Emby.Server.Implementations.Data
                 }
 
                 startIndex += limit;
-                insertText.Length = StartInsertText.Length;
+                insertText.Length = startInsertText.Length;
             }
         }
 
@@ -2274,7 +2275,7 @@ namespace Emby.Server.Implementations.Data
             {
                 var item = query.SimilarTo;
 
-                var builder = new StringBuilder();
+                var builder = new ValueStringBuilder();
                 builder.Append('(');
 
                 if (item.InheritedParentalRatingValue == 0)
@@ -2328,7 +2329,7 @@ namespace Emby.Server.Implementations.Data
 
             if (!string.IsNullOrEmpty(query.SearchTerm))
             {
-                var builder = new StringBuilder();
+                var builder = new ValueStringBuilder();
                 builder.Append('(');
 
                 builder.Append("((CleanName like @SearchTermStartsWith or (OriginalTitle not null and OriginalTitle like @SearchTermStartsWith)) * 10)");
@@ -2454,8 +2455,8 @@ namespace Emby.Server.Implementations.Data
 
             var columns = new List<string> { "count(distinct PresentationUniqueKey)" };
             SetFinalColumnsToSelect(query, columns);
-            var commandTextBuilder = new StringBuilder("select ", 256)
-                .AppendJoin(',', columns)
+            var commandTextBuilder = new ValueStringBuilder("select ", 256)
+                .Append(string.Join(',', columns))
                 .Append(FromText)
                 .Append(GetJoinUserDataText(query));
 
@@ -2463,7 +2464,7 @@ namespace Emby.Server.Implementations.Data
             if (whereClauses.Count != 0)
             {
                 commandTextBuilder.Append(" where ")
-                    .AppendJoin(" AND ", whereClauses);
+                    .Append(string.Join(" AND ", whereClauses));
             }
 
             var commandText = commandTextBuilder.ToString();
@@ -2501,8 +2502,8 @@ namespace Emby.Server.Implementations.Data
 
             var columns = _retrieveItemColumns.ToList();
             SetFinalColumnsToSelect(query, columns);
-            var commandTextBuilder = new StringBuilder("select ", 1024)
-                .AppendJoin(',', columns)
+            var commandTextBuilder = new ValueStringBuilder("select ", 1024)
+                .Append(string.Join(',', columns))
                 .Append(FromText)
                 .Append(GetJoinUserDataText(query));
 
@@ -2511,7 +2512,7 @@ namespace Emby.Server.Implementations.Data
             if (whereClauses.Count != 0)
             {
                 commandTextBuilder.Append(" where ")
-                    .AppendJoin(" AND ", whereClauses);
+                    .Append(string.Join(" AND ", whereClauses));
             }
 
             commandTextBuilder.Append(GetGroupBy(query))
@@ -2663,8 +2664,8 @@ namespace Emby.Server.Implementations.Data
 
             var columns = _retrieveItemColumns.ToList();
             SetFinalColumnsToSelect(query, columns);
-            var commandTextBuilder = new StringBuilder("select ", 512)
-                .AppendJoin(',', columns)
+            var commandTextBuilder = new ValueStringBuilder("select ", 512)
+                .Append(string.Join(',', columns))
                 .Append(FromText)
                 .Append(GetJoinUserDataText(query));
 
@@ -2711,7 +2712,7 @@ namespace Emby.Server.Implementations.Data
 
             if (query.EnableTotalRecordCount)
             {
-                commandTextBuilder.Clear();
+                commandTextBuilder = new ValueStringBuilder(512);
 
                 commandTextBuilder.Append(" select ");
 
@@ -2731,7 +2732,7 @@ namespace Emby.Server.Implementations.Data
 
                 SetFinalColumnsToSelect(query, columnsToSelect);
 
-                commandTextBuilder.AppendJoin(',', columnsToSelect)
+                commandTextBuilder.Append(string.Join(',', columnsToSelect))
                     .Append(FromText)
                     .Append(GetJoinUserDataText(query));
                 if (!string.IsNullOrEmpty(whereText))
@@ -2892,8 +2893,8 @@ namespace Emby.Server.Implementations.Data
 
             var columns = new List<string> { "guid" };
             SetFinalColumnsToSelect(query, columns);
-            var commandTextBuilder = new StringBuilder("select ", 256)
-                .AppendJoin(',', columns)
+            var commandTextBuilder = new ValueStringBuilder("select ", 256)
+                .Append(string.Join(',', columns))
                 .Append(FromText)
                 .Append(GetJoinUserDataText(query));
 
@@ -2901,7 +2902,7 @@ namespace Emby.Server.Implementations.Data
             if (whereClauses.Count != 0)
             {
                 commandTextBuilder.Append(" where ")
-                    .AppendJoin(" AND ", whereClauses);
+                    .Append(string.Join(" AND ", whereClauses));
             }
 
             commandTextBuilder.Append(GetGroupBy(query))
@@ -3143,7 +3144,7 @@ namespace Emby.Server.Implementations.Data
                 }
                 else if (excludeTypes.Length > 1)
                 {
-                    var whereBuilder = new StringBuilder("type not in (");
+                    var whereBuilder = new ValueStringBuilder("type not in (", 512);
                     foreach (var excludeType in excludeTypes)
                     {
                         if (_baseItemKindNames.TryGetValue(excludeType, out var baseItemKindName))
@@ -3179,7 +3180,7 @@ namespace Emby.Server.Implementations.Data
             }
             else if (includeTypes.Length > 1)
             {
-                var whereBuilder = new StringBuilder("type in (");
+                var whereBuilder = new ValueStringBuilder("type in (", 512);
                 foreach (var includeType in includeTypes)
                 {
                     if (_baseItemKindNames.TryGetValue(includeType, out var baseItemKindName))
@@ -3336,7 +3337,7 @@ namespace Emby.Server.Implementations.Data
                 statement?.TryBind("@MaxPremiereDate", query.MaxPremiereDate.Value);
             }
 
-            StringBuilder clauseBuilder = new StringBuilder();
+            var clauseBuilder = new ValueStringBuilder();
             const string Or = " OR ";
 
             var trailerTypes = query.TrailerTypes;
@@ -4492,13 +4493,13 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
 
             CheckDisposed();
 
-            var commandText = new StringBuilder("select Distinct p.Name from People p");
+            var commandText = new ValueStringBuilder("select Distinct p.Name from People p", 512);
 
             var whereClauses = GetPeopleWhereClauses(query, null);
 
             if (whereClauses.Count != 0)
             {
-                commandText.Append(" where ").AppendJoin(" AND ", whereClauses);
+                commandText.Append(" where ").Append(string.Join(" AND ", whereClauses));
             }
 
             commandText.Append(" order by ListOrder");
@@ -4530,13 +4531,13 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
 
             CheckDisposed();
 
-            StringBuilder commandText = new StringBuilder("select ItemId, Name, Role, PersonType, SortOrder from People p");
+            var commandText = new ValueStringBuilder("select ItemId, Name, Role, PersonType, SortOrder from People p", 512);
 
             var whereClauses = GetPeopleWhereClauses(query, null);
 
             if (whereClauses.Count != 0)
             {
-                commandText.Append("  where ").AppendJoin(" AND ", whereClauses);
+                commandText.Append("  where ").Append(string.Join(" AND ", whereClauses));
             }
 
             commandText.Append(" order by ListOrder");
@@ -4652,7 +4653,7 @@ AND Type = @InternalPersonType)");
                 return;
             }
 
-            var insertText = new StringBuilder("insert into AncestorIds (ItemId, AncestorId, AncestorIdText) values ");
+            var insertText = new ValueStringBuilder("insert into AncestorIds (ItemId, AncestorId, AncestorIdText) values ", 512);
 
             for (var i = 0; i < ancestorIds.Count; i++)
             {
@@ -4755,35 +4756,35 @@ AND Type = @InternalPersonType)");
         {
             CheckDisposed();
 
-            var stringBuilder = new StringBuilder("Select Value From ItemValues where Type", 128);
+            var queryBuilder = new ValueStringBuilder("Select Value From ItemValues where Type", 128);
             if (itemValueTypes.Length == 1)
             {
-                stringBuilder.Append('=')
+                queryBuilder.Append('=')
                     .Append(itemValueTypes[0]);
             }
             else
             {
-                stringBuilder.Append(" in (")
-                    .AppendJoin(',', itemValueTypes)
+                queryBuilder.Append(" in (")
+                    .Append(string.Join(',', itemValueTypes))
                     .Append(')');
             }
 
             if (withItemTypes.Count > 0)
             {
-                stringBuilder.Append(" AND ItemId In (select guid from typedbaseitems where type in (")
+                queryBuilder.Append(" AND ItemId In (select guid from typedbaseitems where type in (")
                     .AppendJoinInSingleQuotes(',', withItemTypes)
                     .Append("))");
             }
 
             if (excludeItemTypes.Count > 0)
             {
-                stringBuilder.Append(" AND ItemId not In (select guid from typedbaseitems where type in (")
+                queryBuilder.Append(" AND ItemId not In (select guid from typedbaseitems where type in (")
                     .AppendJoinInSingleQuotes(',', excludeItemTypes)
                     .Append("))");
             }
 
-            stringBuilder.Append(" Group By CleanValue");
-            var commandText = stringBuilder.ToString();
+            queryBuilder.Append(" Group By CleanValue");
+            var commandText = queryBuilder.ToString();
 
             var list = new List<string>();
             using (new QueryTimeLogger(Logger, commandText))
@@ -4821,12 +4822,12 @@ AND Type = @InternalPersonType)");
 
             string itemCountColumns = null;
 
-            var stringBuilder = new StringBuilder(1024);
+            var queryBuilder = new ValueStringBuilder(1024);
             var typesToCount = query.IncludeItemTypes;
 
             if (typesToCount.Length > 0)
             {
-                stringBuilder.Append("(select group_concat(type, '|') from TypedBaseItems B");
+                queryBuilder.Append("(select group_concat(type, '|') from TypedBaseItems B");
 
                 typeSubQuery = new InternalItemsQuery(query.User)
                 {
@@ -4842,15 +4843,15 @@ AND Type = @InternalPersonType)");
                 };
                 var whereClauses = GetWhereClauses(typeSubQuery, null);
 
-                stringBuilder.Append(" where ")
-                    .AppendJoin(" AND ", whereClauses)
+                queryBuilder.Append(" where ")
+                    .Append(string.Join(" AND ", whereClauses))
                     .Append(" AND ")
                     .Append("guid in (select ItemId from ItemValues where ItemValues.CleanValue=A.CleanName AND ")
                     .Append(typeClause)
                     .Append(")) as itemTypes");
 
-                itemCountColumns = stringBuilder.ToString();
-                stringBuilder.Clear();
+                itemCountColumns = queryBuilder.ToString();
+                queryBuilder = new ValueStringBuilder(512);
             }
 
             List<string> columns = _retrieveItemColumns.ToList();
@@ -4882,16 +4883,16 @@ AND Type = @InternalPersonType)");
 
             var innerWhereClauses = GetWhereClauses(innerQuery, null);
 
-            stringBuilder.Append(" where Type=@SelectType And CleanName In (Select CleanValue from ItemValues where ")
+            queryBuilder.Append(" where Type=@SelectType And CleanName In (Select CleanValue from ItemValues where ")
                 .Append(typeClause)
                 .Append(" AND ItemId in (select guid from TypedBaseItems");
             if (innerWhereClauses.Count > 0)
             {
-                stringBuilder.Append(" where ")
-                    .AppendJoin(" AND ", innerWhereClauses);
+                queryBuilder.Append(" where ")
+                    .Append(string.Join(" AND ", innerWhereClauses));
             }
 
-            stringBuilder.Append("))");
+            queryBuilder.Append("))");
 
             var outerQuery = new InternalItemsQuery(query.User)
             {
@@ -4918,15 +4919,15 @@ AND Type = @InternalPersonType)");
             var outerWhereClauses = GetWhereClauses(outerQuery, null);
             if (outerWhereClauses.Count != 0)
             {
-                stringBuilder.Append(" AND ")
-                    .AppendJoin(" AND ", outerWhereClauses);
+                queryBuilder.Append(" AND ")
+                    .Append(string.Join(" AND ", outerWhereClauses));
             }
 
-            var whereText = stringBuilder.ToString();
-            stringBuilder.Clear();
+            var whereText = queryBuilder.ToString();
+            queryBuilder = new ValueStringBuilder(512);
 
-            stringBuilder.Append("select ")
-                .AppendJoin(',', columns)
+            queryBuilder.Append("select ")
+                .Append(string.Join(',', columns))
                 .Append(FromText)
                 .Append(GetJoinUserDataText(query))
                 .Append(whereText)
@@ -4936,11 +4937,11 @@ AND Type = @InternalPersonType)");
                 || query.SimilarTo is not null
                 || !string.IsNullOrEmpty(query.SearchTerm))
             {
-                stringBuilder.Append(GetOrderByText(query));
+                queryBuilder.Append(GetOrderByText(query));
             }
             else
             {
-                stringBuilder.Append(" order by SortName");
+                queryBuilder.Append(" order by SortName");
             }
 
             if (query.Limit.HasValue || query.StartIndex.HasValue)
@@ -4949,13 +4950,13 @@ AND Type = @InternalPersonType)");
 
                 if (query.Limit.HasValue || offset > 0)
                 {
-                    stringBuilder.Append(" LIMIT ")
+                    queryBuilder.Append(" LIMIT ")
                         .Append(query.Limit ?? int.MaxValue);
                 }
 
                 if (offset > 0)
                 {
-                    stringBuilder.Append(" OFFSET ")
+                    queryBuilder.Append(" OFFSET ")
                         .Append(offset);
                 }
             }
@@ -4966,22 +4967,22 @@ AND Type = @InternalPersonType)");
 
             if (!isReturningZeroItems)
             {
-                commandText = stringBuilder.ToString();
+                commandText = queryBuilder.ToString();
             }
 
             string countText = string.Empty;
             if (query.EnableTotalRecordCount)
             {
-                stringBuilder.Clear();
+                queryBuilder = new ValueStringBuilder(512);
                 var columnsToSelect = new List<string> { "count (distinct PresentationUniqueKey)" };
                 SetFinalColumnsToSelect(query, columnsToSelect);
-                stringBuilder.Append("select ")
-                    .AppendJoin(',', columnsToSelect)
+                queryBuilder.Append("select ")
+                    .Append(string.Join(',', columnsToSelect))
                     .Append(FromText)
                     .Append(GetJoinUserDataText(query))
                     .Append(whereText);
 
-                countText = stringBuilder.ToString();
+                countText = queryBuilder.ToString();
             }
 
             var list = new List<(BaseItem, ItemCounts)>();
@@ -5173,7 +5174,7 @@ AND Type = @InternalPersonType)");
             var startIndex = 0;
 
             const string StartInsertText = "insert into ItemValues (ItemId, Type, Value, CleanValue) values ";
-            var insertText = new StringBuilder(StartInsertText);
+            var insertText = new ValueStringBuilder(StartInsertText, 512);
             while (startIndex < values.Count)
             {
                 var endIndex = Math.Min(values.Count, startIndex + Limit);
@@ -5183,7 +5184,7 @@ AND Type = @InternalPersonType)");
                     insertText.AppendFormat(
                         CultureInfo.InvariantCulture,
                         "(@ItemId, @Type{0}, @Value{0}, @CleanValue{0}),",
-                        i);
+                        i.ToString());
                 }
 
                 // Remove trailing comma
@@ -5246,7 +5247,7 @@ AND Type = @InternalPersonType)");
             var listIndex = 0;
 
             const string StartInsertText = "insert into People (ItemId, Name, Role, PersonType, SortOrder, ListOrder) values ";
-            var insertText = new StringBuilder(StartInsertText);
+            var insertText = new ValueStringBuilder(StartInsertText, 512);
             while (startIndex < people.Count)
             {
                 var endIndex = Math.Min(people.Count, startIndex + Limit);
@@ -5393,7 +5394,7 @@ AND Type = @InternalPersonType)");
             const int Limit = 10;
             var startIndex = 0;
 
-            var insertText = new StringBuilder(_mediaStreamSaveColumnsInsertQuery);
+            var insertText = new ValueStringBuilder(_mediaStreamSaveColumnsInsertQuery, _mediaStreamSaveColumnsInsertQuery.Length + 1024);
             while (startIndex < streams.Count)
             {
                 var endIndex = Math.Min(streams.Count, startIndex + Limit);
@@ -5781,7 +5782,7 @@ AND Type = @InternalPersonType)");
         {
             const int InsertAtOnce = 10;
 
-            var insertText = new StringBuilder(_mediaAttachmentInsertPrefix);
+            var insertText = new ValueStringBuilder(_mediaAttachmentInsertPrefix, _mediaAttachmentInsertPrefix.Length + 512);
             for (var startIndex = 0; startIndex < attachments.Count; startIndex += InsertAtOnce)
             {
                 var endIndex = Math.Min(attachments.Count, startIndex + InsertAtOnce);
@@ -5874,8 +5875,7 @@ AND Type = @InternalPersonType)");
 
         private static string BuildMediaAttachmentInsertPrefix()
         {
-            var queryPrefixText = new StringBuilder();
-            queryPrefixText.Append("insert into mediaattachments (");
+            var queryPrefixText = new ValueStringBuilder("insert into mediaattachments (", 512);
             foreach (var column in _mediaAttachmentSaveColumns)
             {
                 queryPrefixText.Append(column)

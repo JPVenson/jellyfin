@@ -14,6 +14,7 @@ using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.Models.SubtitleDtos;
+using Jellyfin.Extensions.SharedStringBuilder;
 using MediaBrowser.Common.Api;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Configuration;
@@ -368,7 +369,7 @@ public class SubtitleController : BaseJellyfinApiController
             throw new ArgumentException("segmentLength was not given, or it was given incorrectly. (It should be bigger than 0)");
         }
 
-        var builder = new StringBuilder();
+        var builder = AsyncStringBuilderCache.Acquire(2048);
         builder.AppendLine("#EXTM3U")
             .Append("#EXT-X-TARGETDURATION:")
             .Append(segmentLength)
@@ -406,7 +407,7 @@ public class SubtitleController : BaseJellyfinApiController
         }
 
         builder.AppendLine("#EXT-X-ENDLIST");
-        return File(Encoding.UTF8.GetBytes(builder.ToString()), MimeTypes.GetMimeType("playlist.m3u8"));
+        return File(Encoding.UTF8.GetBytes(AsyncStringBuilderCache.GetStringAndRelease(builder)), MimeTypes.GetMimeType("playlist.m3u8"));
     }
 
     /// <summary>
