@@ -11,7 +11,7 @@ using Microsoft.Extensions.Logging;
 namespace Jellyfin.Database.Providers.SqLite;
 
 /// <summary>
-/// Configures jellyfin to use an SQLite database.
+/// Provides all nessesary methods to run jellyfin on an SQLite backend.
 /// </summary>
 [JellyfinDatabaseProviderKey("Jellyfin-SQLite")]
 public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
@@ -30,10 +30,10 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
         _logger = logger;
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public IDbContextFactory<JellyfinDbContext>? DbContextFactory { get; set; }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public void Initialise(DbContextOptionsBuilder options)
     {
         options.UseSqlite(
@@ -41,7 +41,7 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
             sqLiteOptions => sqLiteOptions.MigrationsAssembly(GetType().Assembly));
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public async Task RunScheduledOptimisation(CancellationToken cancellationToken)
     {
         var context = await DbContextFactory!.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
@@ -60,13 +60,13 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
         }
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.SetDefaultDateTimeKind(DateTimeKind.Utc);
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public async Task RunShutdownTask(CancellationToken cancellationToken)
     {
         // Run before disposing the application
@@ -79,7 +79,7 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
         SqliteConnection.ClearAllPools();
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
         configurationBuilder.Conventions.Add(_ => new DoNotUseReturningClauseConvention());
