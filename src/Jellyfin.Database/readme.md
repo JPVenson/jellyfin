@@ -2,7 +2,7 @@
 
 This shall provide context on how to work with entity framework's multi provider migration feature.
 
-Jellyfin will support multiple database providers in the future, namely SQLite as its default and the experimental postgresSQL.
+Jellyfin will support multiple database providers in the future, namely SQLite as its default and the experimental PostgreSQL.
 
 Each provider has its own set of migrations, as they contain provider specific instructions to migrate the specific changes to their respective systems.
 
@@ -17,7 +17,7 @@ with SQLite currently being the only supported provider, you need to run the Ent
 The example is made from the root folder of the project e.g for codespaces `/workspaces/jellyfin`
 
 ```cmd
-dotnet ef migrations add {MIGRATION_NAME} --project "src/Jellyfin.Database/Jellyfin.Database.Providers.SqLite" -- --migration-provider Jellyfin-SQLite
+dotnet ef migrations add {MIGRATION_NAME} --project "src/Jellyfin.Database/Jellyfin.Database.Providers.Sqlite" -- --migration-provider Jellyfin-SQLite
 ```
 
 If you get the error: `Run "dotnet tool restore" to make the "dotnet-ef" command available.` Run `dotnet restore`.
