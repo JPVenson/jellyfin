@@ -54,14 +54,14 @@ public class DisplayPreferencesController : BaseJellyfinApiController
     {
         userId = RequestHelpers.GetUserId(User, userId);
 
-        if (!Guid.TryParse(displayPreferencesId, out var itemId))
+        if (!Guid.TryParse(displayPreferencesId, out var displayPreferenceDbId))
         {
-            itemId = displayPreferencesId.GetMD5();
+            displayPreferenceDbId = displayPreferencesId.GetMD5();
         }
 
-        var displayPreferences = _displayPreferencesManager.GetDisplayPreferences(userId.Value, itemId, client);
-        var itemPreferences = _displayPreferencesManager.GetItemDisplayPreferences(displayPreferences.UserId, itemId, displayPreferences.Client);
-        itemPreferences.ItemId = itemId;
+        var displayPreferences = _displayPreferencesManager.GetDisplayPreferences(userId.Value, displayPreferenceDbId, client);
+        var itemPreferences = _displayPreferencesManager.GetItemDisplayPreferences(displayPreferences.UserId, displayPreferenceDbId, displayPreferences.Client);
+        itemPreferences.ItemId = displayPreferenceDbId;
 
         var dto = new DisplayPreferencesDto
         {
@@ -90,7 +90,7 @@ public class DisplayPreferencesController : BaseJellyfinApiController
         dto.CustomPrefs["dashboardTheme"] = displayPreferences.DashboardTheme;
 
         // Load all custom display preferences
-        var customDisplayPreferences = _displayPreferencesManager.ListCustomItemDisplayPreferences(displayPreferences.UserId, itemId, displayPreferences.Client);
+        var customDisplayPreferences = _displayPreferencesManager.ListCustomItemDisplayPreferences(displayPreferences.UserId, displayPreferenceDbId, displayPreferences.Client);
         foreach (var (key, value) in customDisplayPreferences)
         {
             dto.CustomPrefs.TryAdd(key, value);

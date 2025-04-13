@@ -55,6 +55,11 @@ namespace Jellyfin.Database.Implementations.Entities
         [StringLength(65535)]
         public string Value { get; set; }
 
+        /// <summary>
+        /// Gets or sets the navigation property for <see cref="UserId"/>.
+        /// </summary>
+        public User? User { get; set; }
+
         /// <inheritdoc/>
         [ConcurrencyCheck]
         public uint RowVersion { get; private set; }

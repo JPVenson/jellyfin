@@ -5,14 +5,14 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 namespace Jellyfin.Database.Implementations.ModelConfiguration;
 
 /// <summary>
-/// FluentAPI configuration for the AttachmentStreamInfo entity.
+/// Provides configuration for the BaseItemMetadataField entity.
 /// </summary>
-public class AttachmentStreamInfoConfiguration : IEntityTypeConfiguration<AttachmentStreamInfo>
+public class BaseItemImageInfoConfiguration : IEntityTypeConfiguration<BaseItemImageInfo>
 {
     /// <inheritdoc/>
-    public void Configure(EntityTypeBuilder<AttachmentStreamInfo> builder)
+    public void Configure(EntityTypeBuilder<BaseItemImageInfo> builder)
     {
-        builder.HasKey(e => new { e.ItemId, e.Index });
+        builder.HasKey(e => new { e.Id, e.ItemId });
         builder.HasOne(e => e.Item);
     }
 }

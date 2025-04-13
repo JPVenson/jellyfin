@@ -146,5 +146,15 @@ namespace Jellyfin.Database.Implementations.Entities
         /// Gets the home sections.
         /// </summary>
         public virtual ICollection<HomeSection> HomeSections { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the navigation property for <see cref="ItemId"/>.
+        /// </summary>
+        public BaseItemEntity? Item { get; set; }
+
+        /// <summary>
+        /// Gets or sets the navigation property for <see cref="UserId"/>.
+        /// </summary>
+        public User? User { get; set; }
     }
 }

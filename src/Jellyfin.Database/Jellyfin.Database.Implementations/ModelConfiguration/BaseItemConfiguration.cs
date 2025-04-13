@@ -29,6 +29,7 @@ public class BaseItemConfiguration : IEntityTypeConfiguration<BaseItemEntity>
         builder.HasMany(e => e.LockedFields);
         builder.HasMany(e => e.TrailerTypes);
         builder.HasMany(e => e.Images);
+        builder.HasMany(e => e.DisplayPreferences);
 
         builder.HasIndex(e => e.Path);
         builder.HasIndex(e => e.ParentId);

@@ -58,5 +58,10 @@ namespace Jellyfin.Database.Implementations.Entities
         /// </summary>
         /// <value>The end hour.</value>
         public double EndHour { get; set; }
+
+        /// <summary>
+        /// Gets or sets the navigation property for <see cref="UserId"/>.
+        /// </summary>
+        public User? User { get; set; }
     }
 }

@@ -174,6 +174,8 @@ public class BaseItemEntity
 
     public ICollection<BaseItemImageInfo>? Images { get; set; }
 
+    public ICollection<DisplayPreferences>? DisplayPreferences { get; set; }
+
     // those are references to __LOCAL__ ids not DB ids ... TODO: Bring the whole folder structure into the DB
     // public ICollection<BaseItemEntity>? SeriesEpisodes { get; set; }
     // public BaseItemEntity? Series { get; set; }

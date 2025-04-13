@@ -104,6 +104,7 @@ public sealed class BaseItemRepository
         using var transaction = context.Database.BeginTransaction();
         context.AncestorIds.Where(e => e.ItemId == id || e.ParentItemId == id).ExecuteDelete();
         context.AttachmentStreamInfos.Where(e => e.ItemId == id).ExecuteDelete();
+        context.DisplayPreferences.Where(e => e.ItemId == id).ExecuteDelete();
         context.BaseItemImageInfos.Where(e => e.ItemId == id).ExecuteDelete();
         context.BaseItemMetadataFields.Where(e => e.ItemId == id).ExecuteDelete();
         context.BaseItemProviders.Where(e => e.ItemId == id).ExecuteDelete();

@@ -14,12 +14,14 @@ namespace Jellyfin.Database.Implementations.ModelConfiguration
         {
             builder
                 .HasMany(d => d.HomeSections)
-                .WithOne()
-                .OnDelete(DeleteBehavior.Cascade);
+                .WithOne();
 
             builder
                 .HasIndex(entity => new { entity.UserId, entity.ItemId, entity.Client })
                 .IsUnique();
+
+            builder.HasOne(e => e.User).WithMany(e => e.DisplayPreferences);
+            builder.HasOne(e => e.Item).WithMany(e => e.DisplayPreferences);
         }
     }
 }

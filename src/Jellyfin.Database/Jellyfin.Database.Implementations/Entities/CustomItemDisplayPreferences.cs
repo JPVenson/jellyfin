@@ -76,5 +76,15 @@ namespace Jellyfin.Database.Implementations.Entities
         /// Required.
         /// </remarks>
         public string? Value { get; set; }
+
+        /// <summary>
+        /// Gets or sets the navigation property for <see cref="ItemId"/>.
+        /// </summary>
+        public BaseItemEntity? Item { get; set; }
+
+        /// <summary>
+        /// Gets or sets the navigation property for <see cref="UserId"/>.
+        /// </summary>
+        public User? User { get; set; }
     }
 }

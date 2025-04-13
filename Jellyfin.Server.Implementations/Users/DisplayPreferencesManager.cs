@@ -29,16 +29,16 @@ namespace Jellyfin.Server.Implementations.Users
         }
 
         /// <inheritdoc />
-        public DisplayPreferences GetDisplayPreferences(Guid userId, Guid itemId, string client)
+        public DisplayPreferences GetDisplayPreferences(Guid userId, Guid displayPreferenceDbId, string client)
         {
             var prefs = _dbContext.DisplayPreferences
                 .Include(pref => pref.HomeSections)
                 .FirstOrDefault(pref =>
-                    pref.UserId.Equals(userId) && string.Equals(pref.Client, client) && pref.ItemId.Equals(itemId));
+                    pref.UserId.Equals(userId) && string.Equals(pref.Client, client) && pref.ItemId.Equals(displayPreferenceDbId));
 
             if (prefs is null)
             {
-                prefs = new DisplayPreferences(userId, itemId, client);
+                prefs = new DisplayPreferences(userId, displayPreferenceDbId, client);
                 _dbContext.DisplayPreferences.Add(prefs);
             }
 

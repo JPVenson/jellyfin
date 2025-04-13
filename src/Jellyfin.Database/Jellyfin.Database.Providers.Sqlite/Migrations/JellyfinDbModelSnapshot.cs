@@ -397,7 +397,9 @@ namespace Jellyfin.Server.Implementations.Migrations
             modelBuilder.Entity("Jellyfin.Database.Implementations.Entities.BaseItemImageInfo", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("ItemId")
                         .HasColumnType("TEXT");
 
                     b.Property<byte[]>("Blurhash")
@@ -412,9 +414,6 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.Property<int>("ImageType")
                         .HasColumnType("INTEGER");
 
-                    b.Property<Guid>("ItemId")
-                        .HasColumnType("TEXT");
-
                     b.Property<string>("Path")
                         .IsRequired()
                         .HasColumnType("TEXT");
@@ -422,7 +421,7 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.Property<int>("Width")
                         .HasColumnType("INTEGER");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id", "ItemId");
 
                     b.HasIndex("ItemId");
 
@@ -539,6 +538,8 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("ItemId");
+
                     b.HasIndex("UserId", "ItemId", "Client", "Key")
                         .IsUnique();
 
@@ -597,6 +598,8 @@ namespace Jellyfin.Server.Implementations.Migrations
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ItemId");
 
                     b.HasIndex("UserId", "ItemId", "Client")
                         .IsUnique();
@@ -663,6 +666,9 @@ namespace Jellyfin.Server.Implementations.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
+                    b.Property<Guid>("ItemId")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Client")
                         .IsRequired()
                         .HasMaxLength(32)
@@ -670,9 +676,6 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.Property<int?>("IndexBy")
                         .HasColumnType("INTEGER");
-
-                    b.Property<Guid>("ItemId")
-                        .HasColumnType("TEXT");
 
                     b.Property<bool>("RememberIndexing")
                         .HasColumnType("INTEGER");
@@ -694,7 +697,9 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.Property<int>("ViewType")
                         .HasColumnType("INTEGER");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id", "ItemId");
+
+                    b.HasIndex("ItemId");
 
                     b.HasIndex("UserId");
 
@@ -1025,10 +1030,15 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.Property<Guid?>("UserId")
                         .HasColumnType("TEXT");
 
+                    b.Property<Guid?>("UserId1")
+                        .HasColumnType("TEXT");
+
                     b.Property<bool>("Value")
                         .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("UserId1");
 
                     b.HasIndex("UserId", "Kind")
                         .IsUnique()
@@ -1058,12 +1068,17 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.Property<Guid?>("UserId")
                         .HasColumnType("TEXT");
 
+                    b.Property<Guid?>("UserId1")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Value")
                         .IsRequired()
                         .HasMaxLength(65535)
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("UserId1");
 
                     b.HasIndex("UserId", "Kind")
                         .IsUnique()
@@ -1395,11 +1410,12 @@ namespace Jellyfin.Server.Implementations.Migrations
 
             modelBuilder.Entity("Jellyfin.Database.Implementations.Entities.AccessSchedule", b =>
                 {
-                    b.HasOne("Jellyfin.Database.Implementations.Entities.User", null)
+                    b.HasOne("Jellyfin.Database.Implementations.Entities.User", "User")
                         .WithMany("AccessSchedules")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Jellyfin.Database.Implementations.Entities.AncestorId", b =>
@@ -1479,13 +1495,38 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.Navigation("Item");
                 });
 
+            modelBuilder.Entity("Jellyfin.Database.Implementations.Entities.CustomItemDisplayPreferences", b =>
+                {
+                    b.HasOne("Jellyfin.Database.Implementations.Entities.BaseItemEntity", "Item")
+                        .WithMany()
+                        .HasForeignKey("ItemId")
+                        .IsRequired();
+
+                    b.HasOne("Jellyfin.Database.Implementations.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .IsRequired();
+
+                    b.Navigation("Item");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Jellyfin.Database.Implementations.Entities.DisplayPreferences", b =>
                 {
-                    b.HasOne("Jellyfin.Database.Implementations.Entities.User", null)
+                    b.HasOne("Jellyfin.Database.Implementations.Entities.BaseItemEntity", "Item")
+                        .WithMany("DisplayPreferences")
+                        .HasForeignKey("ItemId")
+                        .IsRequired();
+
+                    b.HasOne("Jellyfin.Database.Implementations.Entities.User", "User")
                         .WithMany("DisplayPreferences")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Item");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Jellyfin.Database.Implementations.Entities.HomeSection", b =>
@@ -1493,7 +1534,6 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.HasOne("Jellyfin.Database.Implementations.Entities.DisplayPreferences", null)
                         .WithMany("HomeSections")
                         .HasForeignKey("DisplayPreferencesId")
-                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
@@ -1501,17 +1541,24 @@ namespace Jellyfin.Server.Implementations.Migrations
                 {
                     b.HasOne("Jellyfin.Database.Implementations.Entities.User", null)
                         .WithOne("ProfileImage")
-                        .HasForeignKey("Jellyfin.Database.Implementations.Entities.ImageInfo", "UserId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .HasForeignKey("Jellyfin.Database.Implementations.Entities.ImageInfo", "UserId");
                 });
 
             modelBuilder.Entity("Jellyfin.Database.Implementations.Entities.ItemDisplayPreferences", b =>
                 {
-                    b.HasOne("Jellyfin.Database.Implementations.Entities.User", null)
+                    b.HasOne("Jellyfin.Database.Implementations.Entities.BaseItemEntity", "Item")
+                        .WithMany()
+                        .HasForeignKey("ItemId")
+                        .IsRequired();
+
+                    b.HasOne("Jellyfin.Database.Implementations.Entities.User", "User")
                         .WithMany("ItemDisplayPreferences")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Item");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Jellyfin.Database.Implementations.Entities.ItemValueMap", b =>
@@ -1572,16 +1619,26 @@ namespace Jellyfin.Server.Implementations.Migrations
                 {
                     b.HasOne("Jellyfin.Database.Implementations.Entities.User", null)
                         .WithMany("Permissions")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .HasForeignKey("UserId");
+
+                    b.HasOne("Jellyfin.Database.Implementations.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId1");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Jellyfin.Database.Implementations.Entities.Preference", b =>
                 {
                     b.HasOne("Jellyfin.Database.Implementations.Entities.User", null)
                         .WithMany("Preferences")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .HasForeignKey("UserId");
+
+                    b.HasOne("Jellyfin.Database.Implementations.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId1");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Jellyfin.Database.Implementations.Entities.Security.Device", b =>
@@ -1616,6 +1673,8 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.Navigation("Chapters");
 
                     b.Navigation("Children");
+
+                    b.Navigation("DisplayPreferences");
 
                     b.Navigation("Images");
 

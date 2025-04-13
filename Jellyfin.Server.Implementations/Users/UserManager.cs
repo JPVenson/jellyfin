@@ -7,6 +7,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Transactions;
 using Jellyfin.Data;
 using Jellyfin.Data.Enums;
 using Jellyfin.Data.Events;
@@ -272,8 +273,22 @@ namespace Jellyfin.Server.Implementations.Users
             var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
             await using (dbContext.ConfigureAwait(false))
             {
-                dbContext.Users.Remove(user);
-                await dbContext.SaveChangesAsync().ConfigureAwait(false);
+                var transaction = await dbContext.Database.BeginTransactionAsync().ConfigureAwait(false);
+#pragma warning disable RS0030 // Do not use banned APIs
+                await using (transaction.ConfigureAwait(false))
+                {
+                    await dbContext.CustomItemDisplayPreferences.Where(e => e.UserId == user.Id).ExecuteDeleteAsync().ConfigureAwait(false);
+                    await dbContext.UserData.Where(e => e.UserId == user.Id).ExecuteDeleteAsync().ConfigureAwait(false);
+                    await dbContext.ItemDisplayPreferences.Where(e => e.UserId == user.Id).ExecuteDeleteAsync().ConfigureAwait(false);
+                    await dbContext.DisplayPreferences.Where(e => e.UserId == user.Id).ExecuteDeleteAsync().ConfigureAwait(false);
+                    await dbContext.AccessSchedules.Where(e => e.UserId == user.Id).ExecuteDeleteAsync().ConfigureAwait(false);
+                    await dbContext.Permissions.Where(e => e.UserId == user.Id).ExecuteDeleteAsync().ConfigureAwait(false);
+                    await dbContext.Preferences.Where(e => e.UserId == user.Id).ExecuteDeleteAsync().ConfigureAwait(false);
+                    await dbContext.Users.Where(e => e.Id == user.Id).ExecuteDeleteAsync().ConfigureAwait(false);
+                    dbContext.Users.Remove(user);
+                    await transaction.CommitAsync().ConfigureAwait(false);
+                }
+#pragma warning restore RS0030 // Do not use banned APIs
             }
 
             _users.Remove(userId);

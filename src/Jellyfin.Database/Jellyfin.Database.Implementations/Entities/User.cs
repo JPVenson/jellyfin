@@ -271,6 +271,17 @@ namespace Jellyfin.Database.Implementations.Entities
         public long InternalId { get; set; }
 
         /// <summary>
+        /// Gets or sets the cast receiver id.
+        /// </summary>
+        [StringLength(32)]
+        public string? CastReceiverId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the level of sync play permissions this user has.
+        /// </summary>
+        public SyncPlayUserAccessType SyncPlayAccess { get; set; }
+
+        /// <summary>
         /// Gets or sets the user's profile image. Can be <c>null</c>.
         /// </summary>
         // [ForeignKey("UserId")]
@@ -282,21 +293,6 @@ namespace Jellyfin.Database.Implementations.Entities
         public virtual ICollection<DisplayPreferences> DisplayPreferences { get; private set; }
 
         /// <summary>
-        /// Gets or sets the level of sync play permissions this user has.
-        /// </summary>
-        public SyncPlayUserAccessType SyncPlayAccess { get; set; }
-
-        /// <summary>
-        /// Gets or sets the cast receiver id.
-        /// </summary>
-        [StringLength(32)]
-        public string? CastReceiverId { get; set; }
-
-        /// <inheritdoc />
-        [ConcurrencyCheck]
-        public uint RowVersion { get; private set; }
-
-        /// <summary>
         /// Gets the list of access schedules this user has.
         /// </summary>
         public virtual ICollection<AccessSchedule> AccessSchedules { get; private set; }
@@ -306,31 +302,21 @@ namespace Jellyfin.Database.Implementations.Entities
         /// </summary>
         public virtual ICollection<ItemDisplayPreferences> ItemDisplayPreferences { get; private set; }
 
-        /*
-        /// <summary>
-        /// Gets the list of groups this user is a member of.
-        /// </summary>
-        public virtual ICollection<Group> Groups { get; private set; }
-        */
-
         /// <summary>
         /// Gets the list of permissions this user has.
         /// </summary>
         [ForeignKey("Permission_Permissions_Guid")]
         public virtual ICollection<Permission> Permissions { get; private set; }
 
-        /*
-        /// <summary>
-        /// Gets the list of provider mappings this user has.
-        /// </summary>
-        public virtual ICollection<ProviderMapping> ProviderMappings { get; private set; }
-        */
-
         /// <summary>
         /// Gets the list of preferences this user has.
         /// </summary>
         [ForeignKey("Preference_Preferences_Guid")]
         public virtual ICollection<Preference> Preferences { get; private set; }
+
+        /// <inheritdoc />
+        [ConcurrencyCheck]
+        public uint RowVersion { get; private set; }
 
         /// <inheritdoc/>
         public void OnSavingChanges()

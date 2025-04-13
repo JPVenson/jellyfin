@@ -15,6 +15,8 @@ namespace Jellyfin.Database.Implementations.ModelConfiguration
             builder
                 .HasIndex(entity => new { entity.UserId, entity.ItemId, entity.Client, entity.Key })
                 .IsUnique();
+            builder.HasOne(e => e.Item);
+            builder.HasOne(e => e.User);
         }
     }
 }

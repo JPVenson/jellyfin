@@ -17,35 +17,29 @@ namespace Jellyfin.Database.Implementations.ModelConfiguration
 
             builder
                 .HasOne(u => u.ProfileImage)
-                .WithOne()
-                .OnDelete(DeleteBehavior.Cascade);
+                .WithOne();
 
             builder
                 .HasMany(u => u.Permissions)
                 .WithOne()
-                .HasForeignKey(p => p.UserId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .HasForeignKey(p => p.UserId);
 
             builder
                 .HasMany(u => u.Preferences)
                 .WithOne()
-                .HasForeignKey(p => p.UserId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .HasForeignKey(p => p.UserId);
 
             builder
                 .HasMany(u => u.AccessSchedules)
-                .WithOne()
-                .OnDelete(DeleteBehavior.Cascade);
+                .WithOne(a => a.User);
 
             builder
                 .HasMany(u => u.DisplayPreferences)
-                .WithOne()
-                .OnDelete(DeleteBehavior.Cascade);
+                .WithOne(d => d.User);
 
             builder
                 .HasMany(u => u.ItemDisplayPreferences)
-                .WithOne()
-                .OnDelete(DeleteBehavior.Cascade);
+                .WithOne(d => d.User);
 
             builder
                 .HasIndex(entity => entity.Username)
