@@ -15,7 +15,7 @@ namespace Jellyfin.Server.Implementations.Migrations
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "9.0.3");
+            modelBuilder.HasAnnotation("ProductVersion", "9.0.4");
 
             modelBuilder.Entity("Jellyfin.Database.Implementations.Entities.AccessSchedule", b =>
                 {
@@ -1407,13 +1407,11 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.HasOne("Jellyfin.Database.Implementations.Entities.BaseItemEntity", "Item")
                         .WithMany("Parents")
                         .HasForeignKey("ItemId")
-                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("Jellyfin.Database.Implementations.Entities.BaseItemEntity", "ParentItem")
                         .WithMany("Children")
                         .HasForeignKey("ParentItemId")
-                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Item");
@@ -1426,7 +1424,6 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.HasOne("Jellyfin.Database.Implementations.Entities.BaseItemEntity", "Item")
                         .WithMany()
                         .HasForeignKey("ItemId")
-                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Item");
@@ -1437,7 +1434,6 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.HasOne("Jellyfin.Database.Implementations.Entities.BaseItemEntity", "Item")
                         .WithMany("Images")
                         .HasForeignKey("ItemId")
-                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Item");
@@ -1448,7 +1444,6 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.HasOne("Jellyfin.Database.Implementations.Entities.BaseItemEntity", "Item")
                         .WithMany("LockedFields")
                         .HasForeignKey("ItemId")
-                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Item");
@@ -1459,7 +1454,6 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.HasOne("Jellyfin.Database.Implementations.Entities.BaseItemEntity", "Item")
                         .WithMany("Provider")
                         .HasForeignKey("ItemId")
-                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Item");
@@ -1470,7 +1464,6 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.HasOne("Jellyfin.Database.Implementations.Entities.BaseItemEntity", "Item")
                         .WithMany("TrailerTypes")
                         .HasForeignKey("ItemId")
-                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Item");
@@ -1481,7 +1474,6 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.HasOne("Jellyfin.Database.Implementations.Entities.BaseItemEntity", "Item")
                         .WithMany("Chapters")
                         .HasForeignKey("ItemId")
-                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Item");
@@ -1527,13 +1519,11 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.HasOne("Jellyfin.Database.Implementations.Entities.BaseItemEntity", "Item")
                         .WithMany("ItemValues")
                         .HasForeignKey("ItemId")
-                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("Jellyfin.Database.Implementations.Entities.ItemValue", "ItemValue")
                         .WithMany("BaseItemsMap")
                         .HasForeignKey("ItemValueId")
-                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Item");
@@ -1546,7 +1536,6 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.HasOne("Jellyfin.Database.Implementations.Entities.BaseItemEntity", "Item")
                         .WithMany()
                         .HasForeignKey("ItemId")
-                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Item");
@@ -1557,7 +1546,6 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.HasOne("Jellyfin.Database.Implementations.Entities.BaseItemEntity", "Item")
                         .WithMany("MediaStreams")
                         .HasForeignKey("ItemId")
-                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Item");
@@ -1568,13 +1556,11 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.HasOne("Jellyfin.Database.Implementations.Entities.BaseItemEntity", "Item")
                         .WithMany("Peoples")
                         .HasForeignKey("ItemId")
-                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("Jellyfin.Database.Implementations.Entities.People", "People")
                         .WithMany("BaseItems")
                         .HasForeignKey("PeopleId")
-                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Item");
@@ -1603,7 +1589,6 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.HasOne("Jellyfin.Database.Implementations.Entities.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("User");
@@ -1614,13 +1599,11 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.HasOne("Jellyfin.Database.Implementations.Entities.BaseItemEntity", "Item")
                         .WithMany("UserData")
                         .HasForeignKey("ItemId")
-                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("Jellyfin.Database.Implementations.Entities.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Item");

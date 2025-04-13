@@ -7,6 +7,7 @@ using Jellyfin.Database.Implementations;
 using MediaBrowser.Common.Configuration;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Conventions;
 using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Database.Providers.Sqlite;
@@ -85,6 +86,7 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
     public void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
         configurationBuilder.Conventions.Add(_ => new DoNotUseReturningClauseConvention());
+        configurationBuilder.Conventions.Remove<CascadeDeleteConvention>();
     }
 
     /// <inheritdoc />
