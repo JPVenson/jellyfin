@@ -63,6 +63,11 @@ public sealed class SetupServer : IDisposable
     }
 
     /// <summary>
+    /// Gets the Activity service that contains the logging data for the Startup UI.
+    /// </summary>
+    public static StartupActivityService Activity { get; } = new StartupActivityService();
+
+    /// <summary>
     /// Starts the Bind-All Setup aspcore server to provide a reflection on the current core setup.
     /// </summary>
     /// <returns>A Task.</returns>
@@ -176,6 +181,7 @@ public sealed class SetupServer : IDisposable
                     })
                     .Build();
         await _startupServer.StartAsync().ConfigureAwait(false);
+        StartupActivityService.MainStartupActivity.Startup.State = ActivityState.Done;
     }
 
     /// <summary>
