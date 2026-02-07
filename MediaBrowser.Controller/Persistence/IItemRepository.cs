@@ -43,6 +43,13 @@ public interface IItemRepository
     BaseItem RetrieveItem(Guid id);
 
     /// <summary>
+    /// Retrieves the item based on the extrel id.
+    /// </summary>
+    /// <param name="extRelId">The id.</param>
+    /// <returns>BaseItem.</returns>
+    BaseItem RetrieveItem(string extRelId);
+
+    /// <summary>
     /// Gets the items.
     /// </summary>
     /// <param name="filter">The query.</param>

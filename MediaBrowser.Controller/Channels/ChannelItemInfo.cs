@@ -15,15 +15,15 @@ namespace MediaBrowser.Controller.Channels
     {
         public ChannelItemInfo()
         {
-            MediaSources = new List<MediaSourceInfo>();
-            TrailerTypes = new List<TrailerType>();
-            Genres = new List<string>();
-            Studios = new List<string>();
-            People = new List<PersonInfo>();
-            Tags = new List<string>();
+            MediaSources = [];
+            TrailerTypes = [];
+            Genres = [];
+            Studios = [];
+            People = [];
+            Tags = [];
             ProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            Artists = new List<string>();
-            AlbumArtists = new List<string>();
+            Artists = [];
+            AlbumArtists = [];
         }
 
         public string Name { get; set; }
@@ -40,9 +40,9 @@ namespace MediaBrowser.Controller.Channels
 
         public string Overview { get; set; }
 
-        public List<string> Genres { get; set; }
+        public ReferencedItemModel[] Genres { get; set; }
 
-        public List<string> Studios { get; set; }
+        public ReferencedItemModel[] Studios { get; set; }
 
         public List<string> Tags { get; set; }
 

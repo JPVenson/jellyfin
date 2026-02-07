@@ -172,7 +172,7 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets the genres.
         /// </summary>
         /// <value>The genres.</value>
-        public string[] Genres { get; set; }
+        public (Guid Id, string ExtRelid, string Name)[] Genres { get; set; }
 
         /// <summary>
         /// Gets or sets the community rating.
@@ -288,9 +288,9 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets the studios.
         /// </summary>
         /// <value>The studios.</value>
-        public NameGuidPair[] Studios { get; set; }
+        public (Guid Id, string ExtRelid, string Name)[] Studios { get; set; }
 
-        public NameGuidPair[] GenreItems { get; set; }
+        public (Guid Id, string ExtRelid, string Name)[] GenreItems { get; set; }
 
         /// <summary>
         /// Gets or sets whether the item has a logo, this will hold the Id of the Parent that has one.
@@ -533,7 +533,7 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets the series studio.
         /// </summary>
         /// <value>The series studio.</value>
-        public string SeriesStudio { get; set; }
+        public (Guid Id, string ExtRelid, string Name) SeriesStudio { get; set; }
 
         /// <summary>
         /// Gets or sets the parent thumb item id.

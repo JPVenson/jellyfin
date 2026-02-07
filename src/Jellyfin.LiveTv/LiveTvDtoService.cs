@@ -78,7 +78,7 @@ namespace Jellyfin.LiveTv
 
             if (!string.IsNullOrEmpty(info.ProgramId))
             {
-                dto.ProgramId = GetInternalProgramId(info.ProgramId).ToString("N", CultureInfo.InvariantCulture);
+                dto.ProgramId = GetInternalProgramId(info.ProgramId).ToString("N");
             }
 
             if (program is not null)
@@ -148,7 +148,7 @@ namespace Jellyfin.LiveTv
 
             if (!string.IsNullOrEmpty(info.ProgramId))
             {
-                dto.ProgramId = GetInternalProgramId(info.ProgramId).ToString("N", CultureInfo.InvariantCulture);
+                dto.ProgramId = GetInternalProgramId(info.ProgramId).ToString("N");
             }
 
             dto.DayPattern = info.Days is null ? null : GetDayPattern(info.Days.ToArray());
@@ -404,7 +404,7 @@ namespace Jellyfin.LiveTv
         {
             var name = serviceName + externalId + InternalVersionNumber;
 
-            return _libraryManager.GetNewItemId(name.ToLowerInvariant(), typeof(LiveTvChannel));
+            return _libraryManager.GetNewItemExtRelGuid(name.ToLowerInvariant(), typeof(LiveTvChannel));
         }
 
         public string GetInternalTimerId(string externalId)
@@ -425,7 +425,7 @@ namespace Jellyfin.LiveTv
         {
             var name = ServiceName + externalId + InternalVersionNumber;
 
-            return _libraryManager.GetNewItemId(name.ToLowerInvariant(), typeof(LiveTvProgram));
+            return _libraryManager.GetNewItemExtRelGuid(name.ToLowerInvariant(), typeof(LiveTvProgram));
         }
 
         public async Task<TimerInfo> GetTimerInfo(TimerInfoDto dto, bool isNew, LiveTvManager liveTv, CancellationToken cancellationToken)

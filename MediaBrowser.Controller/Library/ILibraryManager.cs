@@ -177,6 +177,14 @@ namespace MediaBrowser.Controller.Library
         BaseItem? GetItemById(Guid id);
 
         /// <summary>
+        /// Gets the item by its ExtRelId.
+        /// </summary>
+        /// <param name="extRelId">The ExtRelId.</param>
+        /// <returns>BaseItem.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="extRelId"/> is <c>null</c>.</exception>
+        BaseItem? GetItemByExtRelId(string extRelId);
+
+        /// <summary>
         /// Gets the item by id, as T.
         /// </summary>
         /// <param name="id">The item id.</param>
@@ -459,7 +467,15 @@ namespace MediaBrowser.Controller.Library
         /// <param name="key">The key.</param>
         /// <param name="type">The type.</param>
         /// <returns>Guid.</returns>
-        Guid GetNewItemId(string key, Type type);
+        string GetNewItemExtRelId(string key, Type type);
+
+        /// <summary>
+        /// Gets the new item identifier.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <param name="type">The type.</param>
+        /// <returns>Guid.</returns>
+        Guid GetNewItemExtRelGuid(string key, Type type);
 
         /// <summary>
         /// Finds the extras.
@@ -607,11 +623,11 @@ namespace MediaBrowser.Controller.Library
         /// <returns><c>true</c> if ignored, <c>false</c> otherwise.</returns>
         bool IgnoreFile(FileSystemMetadata file, BaseItem parent);
 
-        Guid GetStudioId(string name);
+        string GetStudioExtRelId(string name);
 
-        Guid GetGenreId(string name);
+        string GetGenreExtRelId(string name);
 
-        Guid GetMusicGenreId(string name);
+        string GetMusicGenreExtRelId(string name);
 
         Task AddVirtualFolder(string name, CollectionTypeOptions? collectionType, LibraryOptions options, bool refreshLibrary);
 

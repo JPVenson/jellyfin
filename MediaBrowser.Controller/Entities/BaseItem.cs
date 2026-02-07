@@ -99,16 +99,17 @@ namespace MediaBrowser.Controller.Entities
 
         protected BaseItem()
         {
-            Tags = Array.Empty<string>();
-            Genres = Array.Empty<string>();
-            Studios = Array.Empty<string>();
+            Tags = [];
+            Genres = [];
+            Studios = [];
             ProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            LockedFields = Array.Empty<MetadataField>();
-            ImageInfos = Array.Empty<ItemImageInfo>();
-            ProductionLocations = Array.Empty<string>();
+            LockedFields = [];
+            ImageInfos = [];
+            ProductionLocations = [];
             RemoteTrailers = Array.Empty<MediaUrl>();
-            ExtraIds = Array.Empty<Guid>();
+            ExtraIds = [];
             UserData = [];
+            Id = Guid.NewGuid();
         }
 
         /// <summary>
@@ -224,6 +225,13 @@ namespace MediaBrowser.Controller.Entities
         /// <value>The id.</value>
         [JsonIgnore]
         public Guid Id { get; set; }
+
+        /// <summary>
+        /// Gets or sets the external relationship id former <see cref="Id"/>.
+        /// </summary>
+        /// <value>The id.</value>
+        [JsonIgnore]
+        public string ExtRelId { get; set; }
 
         [JsonIgnore]
         public Guid OwnerId { get; set; }
@@ -453,7 +461,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 if (!IsFileProtocol)
                 {
-                    return Array.Empty<string>();
+                    return [];
                 }
 
                 return [Path];
@@ -618,14 +626,14 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The studios.</value>
         [JsonIgnore]
-        public string[] Studios { get; set; }
+        public ReferencedItemModel[] Studios { get; set; }
 
         /// <summary>
         /// Gets or sets the genres.
         /// </summary>
         /// <value>The genres.</value>
         [JsonIgnore]
-        public string[] Genres { get; set; }
+        public ReferencedItemModel[] Genres { get; set; }
 
         /// <summary>
         /// Gets or sets the tags.
@@ -1119,7 +1127,7 @@ namespace MediaBrowser.Controller.Entities
 
         protected virtual IEnumerable<(BaseItem Item, MediaSourceType MediaSourceType)> GetAllItemsForMediaSources()
         {
-            return Enumerable.Empty<(BaseItem, MediaSourceType)>();
+            return [];
         }
 
         private MediaSourceInfo GetVersionInfo(bool enablePathSubstitution, BaseItem item, MediaSourceType type)
@@ -1839,25 +1847,28 @@ namespace MediaBrowser.Controller.Entities
         public void AddStudio(string name)
         {
             ArgumentException.ThrowIfNullOrEmpty(name);
-            var current = Studios;
+            var current = Studios.Select(e => e.Name).ToArray();
 
             if (!current.Contains(name, StringComparison.OrdinalIgnoreCase))
             {
                 int curLen = current.Length;
                 if (curLen == 0)
                 {
-                    Studios = [name];
+                    Studios = [new() { Name = name }];
                 }
                 else
                 {
-                    Studios = [.. current, name];
+                    Studios = [.. Studios, new() { Name = name }];
                 }
             }
         }
 
         public void SetStudios(IEnumerable<string> names)
         {
-            Studios = names.Trimmed().Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+            Studios = names.Trimmed().Distinct(StringComparer.OrdinalIgnoreCase).Select(e => new ReferencedItemModel()
+            {
+                Name = e
+            }).ToArray();
         }
 
         /// <summary>
@@ -1870,9 +1881,13 @@ namespace MediaBrowser.Controller.Entities
             ArgumentException.ThrowIfNullOrEmpty(name);
 
             var genres = Genres;
-            if (!genres.Contains(name, StringComparison.OrdinalIgnoreCase))
+            if (!genres.Select(e => e.Name).Contains(name, StringComparison.OrdinalIgnoreCase))
             {
-                Genres = [.. genres, name];
+                Genres = [.. genres, new()
+                    {
+                        Name = name
+                    }
+                ];
             }
         }
 
@@ -2448,13 +2463,13 @@ namespace MediaBrowser.Controller.Entities
             if (copyTitleMetadata)
             {
                 // Take some data from the main item, for querying purposes
-                if (!item.Genres.SequenceEqual(ownedItem.Genres, StringComparer.Ordinal))
+                if (!item.Genres.SequenceEqual(ownedItem.Genres))
                 {
                     newOptions.ForceSave = true;
                     ownedItem.Genres = item.Genres;
                 }
 
-                if (!item.Studios.SequenceEqual(ownedItem.Studios, StringComparer.Ordinal))
+                if (!item.Studios.SequenceEqual(ownedItem.Studios))
                 {
                     newOptions.ForceSave = true;
                     ownedItem.Studios = item.Studios;
@@ -2507,7 +2522,7 @@ namespace MediaBrowser.Controller.Entities
                 SearchResult = null
             };
 
-            var id = LibraryManager.GetNewItemId(path, typeof(Video));
+            var id = LibraryManager.GetNewItemExtRelId(path, typeof(Video));
 
             // Try to retrieve it from the db. If we don't find it, use the resolved version
             if (LibraryManager.GetItemById(id) is not Video video)

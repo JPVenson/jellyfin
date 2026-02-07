@@ -240,7 +240,7 @@ public class GuideManager : IGuideManager
                     IncludeItemTypes = [BaseItemKind.LiveTvProgram],
                     ChannelIds = [currentChannel.Id],
                     DtoOptions = new DtoOptions(true)
-                }).Cast<LiveTvProgram>().ToDictionary(i => i.Id);
+                }).Cast<LiveTvProgram>().ToDictionary(i => i.ExtRelId);
 
                 var newPrograms = new List<LiveTvProgram>();
                 var updatedPrograms = new List<LiveTvProgram>();
@@ -389,7 +389,7 @@ public class GuideManager : IGuideManager
             item = new LiveTvChannel
             {
                 Name = channelInfo.Name,
-                Id = id,
+                ExtRelId = id.ToString("N"),
                 DateCreated = DateTime.UtcNow
             };
 
@@ -472,10 +472,10 @@ public class GuideManager : IGuideManager
 
     private (LiveTvProgram Item, bool IsNew, bool IsUpdated) GetProgram(
         ProgramInfo info,
-        Dictionary<Guid, LiveTvProgram> allExistingPrograms,
+        Dictionary<string, LiveTvProgram> allExistingPrograms,
         LiveTvChannel channel)
     {
-        var id = _tvDtoService.GetInternalProgramId(info.Id);
+        var id = _tvDtoService.GetInternalProgramId(info.Id).ToString("N");
 
         var isNew = false;
         var forceUpdate = false;
@@ -486,7 +486,7 @@ public class GuideManager : IGuideManager
             item = new LiveTvProgram
             {
                 Name = info.Name,
-                Id = id,
+                ExtRelId = id,
                 DateCreated = DateTime.UtcNow,
                 DateModified = DateTime.UtcNow
             };
@@ -568,7 +568,7 @@ public class GuideManager : IGuideManager
         }
 
         item.Tags = tags.ToArray();
-        item.Genres = info.Genres.ToArray();
+        item.Genres = info.Genres;
 
         if (info.IsHD ?? false)
         {

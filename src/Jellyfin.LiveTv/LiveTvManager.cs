@@ -1027,7 +1027,7 @@ namespace Jellyfin.LiveTv
                     CommunityRating = program.CommunityRating,
                     EndDate = program.EndDate ?? DateTime.MinValue,
                     EpisodeTitle = program.EpisodeTitle,
-                    Genres = program.Genres.ToList(),
+                    Genres = program.Genres,
                     Id = program.ExternalId,
                     IsHD = program.IsHD,
                     IsKids = program.IsKids,

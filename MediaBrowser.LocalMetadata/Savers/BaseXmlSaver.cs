@@ -335,7 +335,7 @@ namespace MediaBrowser.LocalMetadata.Savers
 
                 foreach (var genre in item.Genres)
                 {
-                    await writer.WriteElementStringAsync(null, "Genre", null, genre).ConfigureAwait(false);
+                    await writer.WriteElementStringAsync(null, "Genre", null, genre.Name).ConfigureAwait(false);
                 }
 
                 await writer.WriteEndElementAsync().ConfigureAwait(false);
@@ -347,7 +347,7 @@ namespace MediaBrowser.LocalMetadata.Savers
 
                 foreach (var studio in item.Studios)
                 {
-                    await writer.WriteElementStringAsync(null, "Studio", null, studio).ConfigureAwait(false);
+                    await writer.WriteElementStringAsync(null, "Studio", null, studio.Name).ConfigureAwait(false);
                 }
 
                 await writer.WriteEndElementAsync().ConfigureAwait(false);

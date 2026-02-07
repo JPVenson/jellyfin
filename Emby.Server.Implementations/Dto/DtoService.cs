@@ -712,36 +712,12 @@ namespace Emby.Server.Implementations.Dto
         /// <param name="item">The item.</param>
         private void AttachStudios(BaseItemDto dto, BaseItem item)
         {
-            dto.Studios = item.Studios
-                .Where(i => !string.IsNullOrEmpty(i))
-                .Select(i => new NameGuidPair
-                {
-                    Name = i,
-                    Id = _libraryManager.GetStudioId(i)
-                })
-                .ToArray();
+            dto.Studios = [.. item.Studios.Select(e => (e.Id, e.ExtRelid, e.Name))];
         }
 
         private void AttachGenreItems(BaseItemDto dto, BaseItem item)
         {
-            dto.GenreItems = item.Genres
-                .Where(i => !string.IsNullOrEmpty(i))
-                .Select(i => new NameGuidPair
-                {
-                    Name = i,
-                    Id = GetGenreId(i, item)
-                })
-                .ToArray();
-        }
-
-        private Guid GetGenreId(string name, BaseItem owner)
-        {
-            if (owner is IHasMusicGenres)
-            {
-                return _libraryManager.GetMusicGenreId(name);
-            }
-
-            return _libraryManager.GetGenreId(name);
+            dto.GenreItems = [.. item.Genres.Select(e => (e.Id, e.ExtRelid, e.Name))];
         }
 
         private string? GetTagAndFillBlurhash(BaseItemDto dto, BaseItem item, ImageType imageType, int imageIndex = 0)
@@ -857,7 +833,7 @@ namespace Emby.Server.Implementations.Dto
 
             if (options.ContainsField(ItemFields.Genres))
             {
-                dto.Genres = item.Genres;
+                dto.Genres = [.. item.Genres.Select(e => (e.Id, e.ExtRelid, e.Name))];
                 AttachGenreItems(dto, item);
             }
 
@@ -1245,7 +1221,7 @@ namespace Emby.Server.Implementations.Dto
                     episodeSeries ??= episode.Series;
                     if (episodeSeries is not null)
                     {
-                        dto.SeriesStudio = episodeSeries.Studios.FirstOrDefault();
+                        dto.SeriesStudio = episodeSeries.Studios.Select(e => (e.Id, e.ExtRelid, e.Name)).FirstOrDefault();
                     }
                 }
             }
@@ -1273,7 +1249,7 @@ namespace Emby.Server.Implementations.Dto
                     series ??= season.Series;
                     if (series is not null)
                     {
-                        dto.SeriesStudio = series.Studios.FirstOrDefault();
+                        dto.SeriesStudio = series.Studios.Select(e => (e.Id, e.ExtRelid, e.Name)).FirstOrDefault();
                     }
                 }
 

@@ -146,6 +146,8 @@ public sealed class BaseItemRepository
         context.ItemDisplayPreferences.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDelete();
         context.ItemValues.Where(e => e.BaseItemsMap!.Count == 0).ExecuteDelete();
         context.ItemValuesMap.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDelete();
+        context.BaseItemGenreItemMaps.WhereOneOrMany(relatedItems, e => e.GenreId).ExecuteDelete();
+        context.BaseItemStudioItemMaps.WhereOneOrMany(relatedItems, e => e.StudioId).ExecuteDelete();
         context.KeyframeData.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDelete();
         context.MediaSegments.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDelete();
         context.MediaStreamInfos.WhereOneOrMany(relatedItems, e => e.ItemId).ExecuteDelete();
@@ -622,9 +624,9 @@ public sealed class BaseItemRepository
         using var context = _dbProvider.CreateDbContext();
         using var transaction = context.Database.BeginTransaction();
 
-        var ids = tuples.Select(f => f.Item.Id).ToArray();
+        var ids = tuples.Where(e => !e.Item.Id.IsEmpty()).Select(f => f.Item.Id).ToArray();
         var existingItems = context.BaseItems.Where(e => ids.Contains(e.Id)).Select(f => f.Id).ToArray();
-        var newItems = tuples.Where(e => !existingItems.Contains(e.Item.Id)).ToArray();
+        var newItems = tuples.Where(e => e.Item.Id.IsEmpty() || !existingItems.Contains(e.Item.Id)).ToArray();
 
         foreach (var item in tuples)
         {
@@ -767,6 +769,12 @@ public sealed class BaseItemRepository
     }
 
     /// <inheritdoc  />
+    public BaseItemDto? RetrieveItem(string extRelId)
+    {
+        return GetSingleItem(e => e.ExtRelId == extRelId);
+    }
+
+    /// <inheritdoc  />
     public BaseItemDto? RetrieveItem(Guid id)
     {
         if (id.IsEmpty())
@@ -774,6 +782,11 @@ public sealed class BaseItemRepository
             throw new ArgumentException("Guid can't be empty", nameof(id));
         }
 
+        return GetSingleItem(e => e.Id == id);
+    }
+
+    private BaseItemDto? GetSingleItem(Expression<Func<BaseItemEntity, bool>> filter)
+    {
         using var context = _dbProvider.CreateDbContext();
         var dbQuery = PrepareItemQuery(context, new()
         {
@@ -788,7 +801,7 @@ public sealed class BaseItemRepository
             .Include(e => e.UserData)
             .Include(e => e.Images);
 
-        var item = dbQuery.FirstOrDefault(e => e.Id == id);
+        var item = dbQuery.FirstOrDefault(filter);
         if (item is null)
         {
             return null;
@@ -841,7 +854,12 @@ public sealed class BaseItemRepository
         dto.TotalBitrate = entity.TotalBitrate;
         dto.ExternalId = entity.ExternalId;
         dto.Size = entity.Size;
-        dto.Genres = string.IsNullOrWhiteSpace(entity.Genres) ? [] : entity.Genres.Split('|');
+        dto.Genres = [.. entity.Genres?.Select(e => new ReferencedItemModel()
+        {
+            ExtRelid = e.Genre!.ExtRelId,
+            Id = e.GenreId,
+            Name = e.Genre!.Name
+        }) ?? []];
         dto.DateCreated = entity.DateCreated ?? DateTime.SpecifyKind(DateTime.MinValue, DateTimeKind.Utc);
         dto.DateModified = entity.DateModified ?? DateTime.SpecifyKind(DateTime.MinValue, DateTimeKind.Utc);
         dto.ChannelId = entity.ChannelId ?? Guid.Empty;
@@ -874,7 +892,13 @@ public sealed class BaseItemRepository
 
         dto.ExtraIds = string.IsNullOrWhiteSpace(entity.ExtraIds) ? [] : entity.ExtraIds.Split('|').Select(e => Guid.Parse(e)).ToArray();
         dto.ProductionLocations = entity.ProductionLocations?.Split('|') ?? [];
-        dto.Studios = entity.Studios?.Split('|') ?? [];
+        dto.Studios = [.. entity.Studios?.Select(e => new ReferencedItemModel()
+        {
+            ExtRelid = e.Studio!.ExtRelId,
+            Id = e.StudioId,
+            Name = e.Studio!.Name
+        }) ?? []];
+
         dto.Tags = string.IsNullOrWhiteSpace(entity.Tags) ? [] : entity.Tags.Split('|');
 
         if (dto is IHasProgramAttributes hasProgramAttributes)
@@ -1008,7 +1032,11 @@ public sealed class BaseItemRepository
         entity.TotalBitrate = dto.TotalBitrate;
         entity.ExternalId = dto.ExternalId;
         entity.Size = dto.Size;
-        entity.Genres = string.Join('|', dto.Genres);
+        entity.Genres = [.. dto.Genres.Select(e => new BaseItemGenreItemMap()
+        {
+            ChildId = entity.Id,
+            GenreId = e.Id
+        })];
         entity.DateCreated = dto.DateCreated == DateTime.MinValue ? null : dto.DateCreated;
         entity.DateModified = dto.DateModified == DateTime.MinValue ? null : dto.DateModified;
         entity.ChannelId = dto.ChannelId;
@@ -1036,7 +1064,11 @@ public sealed class BaseItemRepository
 
         entity.ExtraIds = dto.ExtraIds is not null ? string.Join('|', dto.ExtraIds) : null;
         entity.ProductionLocations = dto.ProductionLocations is not null ? string.Join('|', dto.ProductionLocations) : null;
-        entity.Studios = dto.Studios is not null ? string.Join('|', dto.Studios) : null;
+        entity.Studios = [.. dto.Studios!.Select(e => new BaseItemStudioItemMap()
+        {
+            ChildId = entity.Id,
+            StudioId = e.Id
+        })];
         entity.Tags = dto.Tags is not null ? string.Join('|', dto.Tags) : null;
         entity.LockedFields = dto.LockedFields is not null ? dto.LockedFields
             .Select(e => new BaseItemMetadataField()
@@ -1460,8 +1492,8 @@ public sealed class BaseItemRepository
             list.AddRange(hasAlbumArtist.AlbumArtists.Select(i => (ItemValueType.AlbumArtist, i)));
         }
 
-        list.AddRange(item.Genres.Select(i => (ItemValueType.Genre, i)));
-        list.AddRange(item.Studios.Select(i => (ItemValueType.Studios, i)));
+        list.AddRange(item.Genres.Select(i => (ItemValueType.Genre, i.Name)));
+        list.AddRange(item.Studios.Select(i => (ItemValueType.Studios, i.Name)));
         list.AddRange(item.Tags.Select(i => (ItemValueType.Tags, i)));
 
         // keywords was 5
@@ -2036,7 +2068,7 @@ public sealed class BaseItemRepository
         if (!string.IsNullOrWhiteSpace(filter.NameLessThan))
         {
             var lessThanLower = filter.NameLessThan.ToLowerInvariant();
-            baseQuery = baseQuery.Where(e => e.SortName!.CompareTo(lessThanLower ) < 0);
+            baseQuery = baseQuery.Where(e => e.SortName!.CompareTo(lessThanLower) < 0);
         }
 
         if (filter.ImageTypes.Length > 0)
@@ -2409,6 +2441,11 @@ public sealed class BaseItemRepository
         if (filter.ItemIds.Length > 0)
         {
             baseQuery = baseQuery.WhereOneOrMany(filter.ItemIds, e => e.Id);
+        }
+
+        if (filter.ItemIds.Length > 0)
+        {
+            baseQuery = baseQuery.WhereOneOrMany(filter.ExtRelIds, e => e.ExtRelId);
         }
 
         if (filter.ExcludeItemIds.Length > 0)

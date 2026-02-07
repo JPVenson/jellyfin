@@ -65,13 +65,13 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
             Assert.Equal("When Shadow Moon is released from prison early after the death of his wife, he meets Mr. Wednesday and is recruited as his bodyguard. Shadow discovers that this may be more than he bargained for.", item.Overview);
             Assert.Equal(0, item.RunTimeTicks);
             Assert.Equal("16", item.OfficialRating);
-            Assert.Contains("Drama", item.Genres);
-            Assert.Contains("Mystery", item.Genres);
-            Assert.Contains("Sci-Fi & Fantasy", item.Genres);
+            Assert.Contains("Drama", item.Genres.Select(e => e.Name));
+            Assert.Contains("Mystery", item.Genres.Select(e => e.Name));
+            Assert.Contains("Sci-Fi & Fantasy", item.Genres.Select(e => e.Name));
             Assert.Equal(new DateTime(2017, 4, 30), item.PremiereDate);
             Assert.Equal(2017, item.ProductionYear);
             Assert.Single(item.Studios);
-            Assert.Contains("Starz", item.Studios);
+            Assert.Contains("Starz", item.Studios.Select(e => e.Name));
             Assert.Equal(1, item.IndexNumberEnd);
             Assert.Equal(2, item.AirsAfterSeasonNumber);
             Assert.Equal(3, item.AirsBeforeSeasonNumber);

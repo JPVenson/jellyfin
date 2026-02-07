@@ -26,9 +26,9 @@ namespace MediaBrowser.Controller.Entities.Audio
     {
         public Audio()
         {
-            Artists = Array.Empty<string>();
-            AlbumArtists = Array.Empty<string>();
-            LyricFiles = Array.Empty<string>();
+            Artists = [];
+            AlbumArtists = [];
+            LyricFiles = [];
         }
 
         /// <inheritdoc />

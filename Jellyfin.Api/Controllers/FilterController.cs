@@ -98,6 +98,7 @@ public class FilterController : BaseJellyfinApiController
                 .ToArray(),
 
             Genres = itemList.SelectMany(i => i.Genres)
+                .Select(e => e.Name)
                 .DistinctNames()
                 .Order()
                 .ToArray(),

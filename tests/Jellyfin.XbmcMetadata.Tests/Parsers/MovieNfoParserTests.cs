@@ -96,15 +96,15 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
             Assert.Equal("141052", item.ProviderIds[MetadataProvider.Tmdb.ToString()]);
 
             Assert.Equal(4, item.Genres.Length);
-            Assert.Contains("Action", item.Genres);
-            Assert.Contains("Adventure", item.Genres);
-            Assert.Contains("Fantasy", item.Genres);
-            Assert.Contains("Sci-Fi", item.Genres);
+            Assert.Contains("Action", item.Genres.Select(e => e.Name));
+            Assert.Contains("Adventure", item.Genres.Select(e => e.Name));
+            Assert.Contains("Fantasy", item.Genres.Select(e => e.Name));
+            Assert.Contains("Sci-Fi", item.Genres.Select(e => e.Name));
 
             Assert.Equal(new DateTime(2017, 11, 15), item.PremiereDate);
             Assert.Equal(new DateTime(2017, 11, 16), item.EndDate);
             Assert.Single(item.Studios);
-            Assert.Contains("DC Comics", item.Studios);
+            Assert.Contains("DC Comics", item.Studios.Select(e => e.Name));
 
             Assert.Equal("1.777778", item.AspectRatio);
             Assert.Equal(Video3DFormat.HalfSideBySide, item.Video3DFormat);

@@ -35,6 +35,6 @@ namespace MediaBrowser.Controller.Library
         /// <param name="user">The user to use.</param>
         /// <param name="dtoOptions">The options to use.</param>
         /// <returns>List of items.</returns>
-        IReadOnlyList<BaseItem> GetInstantMixFromGenres(IEnumerable<string> genres, User? user, DtoOptions dtoOptions);
+        IReadOnlyList<BaseItem> GetInstantMixFromGenres(IEnumerable<ReferencedItemModel> genres, User? user, DtoOptions dtoOptions);
     }
 }

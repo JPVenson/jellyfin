@@ -163,7 +163,7 @@ namespace Jellyfin.LiveTv.Listings
                 EndDate = program.EndDate.UtcDateTime,
                 EpisodeNumber = program.Episode.Episode,
                 EpisodeTitle = episodeTitle,
-                Genres = programCategories,
+                Genres = [.. programCategories.Select(e => new ReferencedItemModel() { Name = e })],
                 StartDate = program.StartDate.UtcDateTime,
                 Name = program.Title,
                 Overview = program.Description,

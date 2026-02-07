@@ -114,6 +114,16 @@ public class JellyfinDbContext(DbContextOptions<JellyfinDbContext> options, ILog
     public DbSet<BaseItemEntity> BaseItems => Set<BaseItemEntity>();
 
     /// <summary>
+    /// Gets the <see cref="DbSet{TEntity}"/> containing the mapping of base items to genres.
+    /// </summary>
+    public DbSet<BaseItemGenreItemMap> BaseItemGenreItemMaps => Set<BaseItemGenreItemMap>();
+
+    /// <summary>
+    /// Gets the <see cref="DbSet{TEntity}"/> containing the mapping of base items to studios.
+    /// </summary>
+    public DbSet<BaseItemStudioItemMap> BaseItemStudioItemMaps => Set<BaseItemStudioItemMap>();
+
+    /// <summary>
     /// Gets the <see cref="DbSet{TEntity}"/> containing the user data.
     /// </summary>
     public DbSet<Chapter> Chapters => Set<Chapter>();
@@ -167,90 +177,6 @@ public class JellyfinDbContext(DbContextOptions<JellyfinDbContext> options, ILog
     /// Gets the <see cref="DbSet{TEntity}"/>.
     /// </summary>
     public DbSet<KeyframeData> KeyframeData => Set<KeyframeData>();
-
-    /*public DbSet<Artwork> Artwork => Set<Artwork>();
-
-    public DbSet<Book> Books => Set<Book>();
-
-    public DbSet<BookMetadata> BookMetadata => Set<BookMetadata>();
-
-    public DbSet<Chapter> Chapters => Set<Chapter>();
-
-    public DbSet<Collection> Collections => Set<Collection>();
-
-    public DbSet<CollectionItem> CollectionItems => Set<CollectionItem>();
-
-    public DbSet<Company> Companies => Set<Company>();
-
-    public DbSet<CompanyMetadata> CompanyMetadata => Set<CompanyMetadata>();
-
-    public DbSet<CustomItem> CustomItems => Set<CustomItem>();
-
-    public DbSet<CustomItemMetadata> CustomItemMetadata => Set<CustomItemMetadata>();
-
-    public DbSet<Episode> Episodes => Set<Episode>();
-
-    public DbSet<EpisodeMetadata> EpisodeMetadata => Set<EpisodeMetadata>();
-
-    public DbSet<Genre> Genres => Set<Genre>();
-
-    public DbSet<Group> Groups => Set<Groups>();
-
-    public DbSet<Library> Libraries => Set<Library>();
-
-    public DbSet<LibraryItem> LibraryItems => Set<LibraryItems>();
-
-    public DbSet<LibraryRoot> LibraryRoot => Set<LibraryRoot>();
-
-    public DbSet<MediaFile> MediaFiles => Set<MediaFiles>();
-
-    public DbSet<MediaFileStream> MediaFileStream => Set<MediaFileStream>();
-
-    public DbSet<Metadata> Metadata => Set<Metadata>();
-
-    public DbSet<MetadataProvider> MetadataProviders => Set<MetadataProvider>();
-
-    public DbSet<MetadataProviderId> MetadataProviderIds => Set<MetadataProviderId>();
-
-    public DbSet<Movie> Movies => Set<Movie>();
-
-    public DbSet<MovieMetadata> MovieMetadata => Set<MovieMetadata>();
-
-    public DbSet<MusicAlbum> MusicAlbums => Set<MusicAlbum>();
-
-    public DbSet<MusicAlbumMetadata> MusicAlbumMetadata => Set<MusicAlbumMetadata>();
-
-    public DbSet<Person> People => Set<Person>();
-
-    public DbSet<PersonRole> PersonRoles => Set<PersonRole>();
-
-    public DbSet<Photo> Photo => Set<Photo>();
-
-    public DbSet<PhotoMetadata> PhotoMetadata => Set<PhotoMetadata>();
-
-    public DbSet<ProviderMapping> ProviderMappings => Set<ProviderMapping>();
-
-    public DbSet<Rating> Ratings => Set<Rating>();
-
-    /// <summary>
-    /// Repository for global::Jellyfin.Data.Entities.RatingSource - This is the entity to
-    /// store review ratings, not age ratings.
-    /// </summary>
-    public DbSet<RatingSource> RatingSources => Set<RatingSource>();
-
-    public DbSet<Release> Releases => Set<Release>();
-
-    public DbSet<Season> Seasons => Set<Season>();
-
-    public DbSet<SeasonMetadata> SeasonMetadata => Set<SeasonMetadata>();
-
-    public DbSet<Series> Series => Set<Series>();
-
-    public DbSet<SeriesMetadata> SeriesMetadata => Set<SeriesMetadata();
-
-    public DbSet<Track> Tracks => Set<Track>();
-
-    public DbSet<TrackMetadata> TrackMetadata => Set<TrackMetadata>();*/
 
     /// <inheritdoc/>
     public override async Task<int> SaveChangesAsync(

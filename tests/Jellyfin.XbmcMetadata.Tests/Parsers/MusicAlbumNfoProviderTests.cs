@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Threading;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities.Audio;
@@ -58,7 +59,7 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
 
             Assert.Equal("The Best of 1980-1990", item.Name);
             Assert.Equal(1989, item.ProductionYear);
-            Assert.Contains("Pop", item.Genres);
+            Assert.Contains("Pop", item.Genres.Select(e => e.Name));
             Assert.Single(item.Genres);
             Assert.Contains("Rock/Pop", item.Tags);
             Assert.Equal("The Best of 1980-1990 is the first greatest hits compilation by Irish rock band U2, released in November 1998. It mostly contains the group's hit singles from the eighties but also mixes in some live staples as well as one new recording, Sweetest Thing. In April 1999, a companion video (featuring music videos and live footage) was released. The album was followed by another compilation, The Best of 1990-2000, in 2002.\nA limited edition version containing a special B-sides disc was released on the same date as the single-disc version. At the time of release, the official word was that the 2-disc album would be available the first week the album went on sale, then pulled from the stores. While this threat never materialized, it did result in the 2-disc version being in very high demand. Both versions charted in the Billboard 200.\nThe boy on the cover is Peter Rowan, brother of Bono's friend Guggi (real name Derek Rowan) of the Virgin Prunes. He also appears on the covers of the early EP Three, two of the band's first three albums (Boy and War), and Early Demos.", item.Overview);

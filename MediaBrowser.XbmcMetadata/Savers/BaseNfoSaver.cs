@@ -663,12 +663,12 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 writer.WriteElementString("country", country);
             }
 
-            foreach (var genre in item.Genres.Trimmed().OrderBy(genre => genre))
+            foreach (var genre in item.Genres.Select(e => e.Name).Trimmed().OrderBy(genre => genre))
             {
                 writer.WriteElementString("genre", genre);
             }
 
-            foreach (var studio in item.Studios.Trimmed().OrderBy(studio => studio))
+            foreach (var studio in item.Studios.Select(e => e.Name).Trimmed().OrderBy(studio => studio))
             {
                 writer.WriteElementString("studio", studio);
             }

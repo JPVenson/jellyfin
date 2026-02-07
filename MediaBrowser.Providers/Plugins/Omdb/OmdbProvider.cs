@@ -404,7 +404,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
             // But only do it if English is the preferred language because this data will not be localized
             if (isEnglishRequested && !string.IsNullOrWhiteSpace(result.Genre))
             {
-                item.Genres = Array.Empty<string>();
+                item.Genres = [];
 
                 foreach (var genre in result.Genre.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
                 {

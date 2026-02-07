@@ -382,10 +382,10 @@ namespace Jellyfin.LiveTv.Listings
 
             if (details.Genres is not null)
             {
-                info.Genres = details.Genres.Where(g => !string.IsNullOrWhiteSpace(g)).ToList();
+                info.Genres = details.Genres.Where(g => !string.IsNullOrWhiteSpace(g)).Select(e => new ReferencedItemModel() { Name = e }).ToArray();
                 info.IsNews = details.Genres.Contains("news", StringComparison.OrdinalIgnoreCase);
 
-                if (info.Genres.Contains("children", StringComparison.OrdinalIgnoreCase))
+                if (details.Genres.Contains("children", StringComparison.OrdinalIgnoreCase))
                 {
                     info.IsKids = true;
                 }

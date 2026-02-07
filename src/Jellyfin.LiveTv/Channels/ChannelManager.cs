@@ -431,14 +431,14 @@ namespace Jellyfin.LiveTv.Channels
         {
             var parentFolderId = Guid.Empty;
 
-            var id = GetInternalChannelId(channelInfo.Name);
+            var extRelId = GetInternalChannelId(channelInfo.Name);
 
-            var path = Channel.GetInternalMetadataPath(_config.ApplicationPaths.InternalMetadataPath, id);
+            var path = Channel.GetInternalMetadataPath(_config.ApplicationPaths.InternalMetadataPath, extRelId);
 
             var isNew = false;
             var forceUpdate = false;
 
-            var item = _libraryManager.GetItemById(id) as Channel;
+            var item = _libraryManager.GetItemByExtRelId(extRelId.ToString("D")) as Channel;
 
             if (item is null)
             {
@@ -446,7 +446,7 @@ namespace Jellyfin.LiveTv.Channels
                 item = new Channel
                 {
                     Name = channelInfo.Name,
-                    Id = id,
+                    ExtRelId = extRelId.ToString("D"),
                     DateCreated = info.CreationTimeUtc,
                     DateModified = info.LastWriteTimeUtc
                 };
@@ -461,12 +461,12 @@ namespace Jellyfin.LiveTv.Channels
 
             item.Path = path;
 
-            if (!item.ChannelId.Equals(id))
+            if (!item.ChannelId.Equals(extRelId))
             {
                 forceUpdate = true;
             }
 
-            item.ChannelId = id;
+            item.ChannelId = extRelId;
 
             if (!item.ParentId.Equals(parentFolderId))
             {
@@ -584,7 +584,7 @@ namespace Jellyfin.LiveTv.Channels
         {
             ArgumentException.ThrowIfNullOrEmpty(name);
 
-            return _libraryManager.GetNewItemId("Channel " + name, typeof(Channel));
+            return _libraryManager.GetNewItemExtRelGuid("Channel " + name, typeof(Channel));
         }
 
         /// <inheritdoc />
@@ -924,10 +924,10 @@ namespace Jellyfin.LiveTv.Channels
             return externalId + (channelName ?? string.Empty) + "16";
         }
 
-        private T GetItemById<T>(string idString, string channelName, out bool isNew)
+        private T GetItemByExtRelId<T>(string idString, string channelName, out bool isNew)
             where T : BaseItem, new()
         {
-            var id = _libraryManager.GetNewItemId(GetIdToHash(idString, channelName), typeof(T));
+            var id = _libraryManager.GetNewItemExtRelId(GetIdToHash(idString, channelName), typeof(T));
 
             T item = null;
 
@@ -950,7 +950,7 @@ namespace Jellyfin.LiveTv.Channels
                 isNew = false;
             }
 
-            item.Id = id;
+            item.ExtRelId = id;
             return item;
         }
 
@@ -966,29 +966,29 @@ namespace Jellyfin.LiveTv.Channels
             {
                 item = info.FolderType switch
                 {
-                    ChannelFolderType.MusicAlbum => GetItemById<MusicAlbum>(info.Id, channelProvider.Name, out isNew),
-                    ChannelFolderType.MusicArtist => GetItemById<MusicArtist>(info.Id, channelProvider.Name, out isNew),
-                    ChannelFolderType.PhotoAlbum => GetItemById<PhotoAlbum>(info.Id, channelProvider.Name, out isNew),
-                    ChannelFolderType.Series => GetItemById<Series>(info.Id, channelProvider.Name, out isNew),
-                    ChannelFolderType.Season => GetItemById<Season>(info.Id, channelProvider.Name, out isNew),
-                    _ => GetItemById<Folder>(info.Id, channelProvider.Name, out isNew)
+                    ChannelFolderType.MusicAlbum => GetItemByExtRelId<MusicAlbum>(info.Id, channelProvider.Name, out isNew),
+                    ChannelFolderType.MusicArtist => GetItemByExtRelId<MusicArtist>(info.Id, channelProvider.Name, out isNew),
+                    ChannelFolderType.PhotoAlbum => GetItemByExtRelId<PhotoAlbum>(info.Id, channelProvider.Name, out isNew),
+                    ChannelFolderType.Series => GetItemByExtRelId<Series>(info.Id, channelProvider.Name, out isNew),
+                    ChannelFolderType.Season => GetItemByExtRelId<Season>(info.Id, channelProvider.Name, out isNew),
+                    _ => GetItemByExtRelId<Folder>(info.Id, channelProvider.Name, out isNew)
                 };
             }
             else if (info.MediaType == ChannelMediaType.Audio)
             {
                 item = info.ContentType == ChannelMediaContentType.Podcast
-                    ? GetItemById<AudioBook>(info.Id, channelProvider.Name, out isNew)
-                    : GetItemById<Audio>(info.Id, channelProvider.Name, out isNew);
+                    ? GetItemByExtRelId<AudioBook>(info.Id, channelProvider.Name, out isNew)
+                    : GetItemByExtRelId<Audio>(info.Id, channelProvider.Name, out isNew);
             }
             else
             {
                 item = info.ContentType switch
                 {
-                    ChannelMediaContentType.Episode => GetItemById<Episode>(info.Id, channelProvider.Name, out isNew),
-                    ChannelMediaContentType.Movie => GetItemById<Movie>(info.Id, channelProvider.Name, out isNew),
+                    ChannelMediaContentType.Episode => GetItemByExtRelId<Episode>(info.Id, channelProvider.Name, out isNew),
+                    ChannelMediaContentType.Movie => GetItemByExtRelId<Movie>(info.Id, channelProvider.Name, out isNew),
                     var x when x == ChannelMediaContentType.Trailer || info.ExtraType == ExtraType.Trailer
-                    => GetItemById<Trailer>(info.Id, channelProvider.Name, out isNew),
-                    _ => GetItemById<Video>(info.Id, channelProvider.Name, out isNew)
+                    => GetItemByExtRelId<Trailer>(info.Id, channelProvider.Name, out isNew),
+                    _ => GetItemByExtRelId<Video>(info.Id, channelProvider.Name, out isNew)
                 };
             }
 
@@ -1006,8 +1006,8 @@ namespace Jellyfin.LiveTv.Channels
             if (isNew)
             {
                 item.Name = info.Name;
-                item.Genres = info.Genres.ToArray();
-                item.Studios = info.Studios.ToArray();
+                item.Genres = info.Genres;
+                item.Studios = info.Studios;
                 item.CommunityRating = info.CommunityRating;
                 item.Overview = info.Overview;
                 item.IndexNumber = info.IndexNumber;

@@ -33,7 +33,7 @@ namespace Emby.Server.Implementations.Library
                 item.SetParent(parent);
             }
 
-            item.Id = libraryManager.GetNewItemId(item.Path, item.GetType());
+            item.ExtRelId = libraryManager.GetNewItemExtRelId(item.Path, item.GetType());
 
             item.IsLocked = item.Path.Contains("[dontfetchmeta]", StringComparison.OrdinalIgnoreCase) ||
                 item.GetParents().Any(i => i.IsLocked);
@@ -73,7 +73,7 @@ namespace Emby.Server.Implementations.Library
                 item.SetParent(args.Parent);
             }
 
-            item.Id = libraryManager.GetNewItemId(item.Path, item.GetType());
+            item.ExtRelId = libraryManager.GetNewItemExtRelId(item.Path, item.GetType());
 
             // Make sure the item has a name
             EnsureName(item, args.FileInfo);

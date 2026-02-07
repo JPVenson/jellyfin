@@ -113,7 +113,7 @@ public class PhotoProvider : ICustomMetadataProvider<Photo>, IForcedProvider, IH
                         item.ProductionYear = dateTaken.Value.Year;
                     }
 
-                    item.Genres = image.ImageTag.Genres;
+                    item.Genres = image.ImageTag.Genres.Select(e => new ReferencedItemModel() { Name = e }).ToArray();
                     item.Tags = image.ImageTag.Keywords;
                     item.Software = image.ImageTag.Software;
 

@@ -10,6 +10,11 @@ public class BaseItemEntity
 {
     public required Guid Id { get; set; }
 
+    /// <summary>
+    /// Gets or Sets the external relationship id which is a unique deterministic short form identifier for this base item.
+    /// </summary>
+    public string? ExtRelId { get; set; }
+
     public required string Type { get; set; }
 
     public string? Data { get; set; }
@@ -46,8 +51,6 @@ public class BaseItemEntity
 
     public int? ProductionYear { get; set; }
 
-    public string? Genres { get; set; }
-
     public string? SortName { get; set; }
 
     public string? ForcedSortName { get; set; }
@@ -73,8 +76,6 @@ public class BaseItemEntity
     public DateTime? DateLastSaved { get; set; }
 
     public bool IsInMixedFolder { get; set; }
-
-    public string? Studios { get; set; }
 
     public string? ExternalServiceId { get; set; }
 
@@ -178,13 +179,11 @@ public class BaseItemEntity
 
     public ICollection<BaseItemImageInfo>? Images { get; set; }
 
-    // those are references to __LOCAL__ ids not DB ids ... TODO: Bring the whole folder structure into the DB
-    // public ICollection<BaseItemEntity>? SeriesEpisodes { get; set; }
-    // public BaseItemEntity? Series { get; set; }
-    // public BaseItemEntity? Season { get; set; }
-    // public BaseItemEntity? Parent { get; set; }
-    // public ICollection<BaseItemEntity>? DirectChildren { get; set; }
-    // public BaseItemEntity? TopParent { get; set; }
-    // public ICollection<BaseItemEntity>? AllChildren { get; set; }
-    // public ICollection<BaseItemEntity>? SeasonEpisodes { get; set; }
+    public ICollection<BaseItemStudioItemMap>? Studios { get; set; }
+
+    public ICollection<BaseItemStudioItemMap>? StudioChildren { get; set; }
+
+    public ICollection<BaseItemGenreItemMap>? Genres { get; set; }
+
+    public ICollection<BaseItemGenreItemMap>? GenresChildren { get; set; }
 }

@@ -353,9 +353,9 @@ namespace MediaBrowser.Providers.MediaInfo
 
                 genres = genres.Trimmed().Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
 
-                if (options.ReplaceAllMetadata || audio.Genres is null || audio.Genres.Length == 0 || audio.Genres.All(string.IsNullOrWhiteSpace))
+                if (options.ReplaceAllMetadata || audio.Genres is null || audio.Genres.Length == 0 || audio.Genres.Select(e => e.Name).All(string.IsNullOrWhiteSpace))
                 {
-                    audio.Genres = genres;
+                    audio.Genres = genres.Select(e => new ReferencedItemModel() { Name = e }).ToArray();
                 }
             }
 

@@ -57,8 +57,7 @@ namespace Emby.Server.Implementations.Library
                 out _)
                .Cast<Audio>()
                .SelectMany(i => i.Genres)
-               .Concat(item.Genres)
-               .DistinctNames();
+               .Concat(item.Genres);
 
             return GetInstantMixFromGenres(genres, user, dtoOptions);
         }
@@ -68,21 +67,9 @@ namespace Emby.Server.Implementations.Library
             return GetInstantMixFromGenres(item.Genres, user, dtoOptions);
         }
 
-        public IReadOnlyList<BaseItem> GetInstantMixFromGenres(IEnumerable<string> genres, User? user, DtoOptions dtoOptions)
+        public IReadOnlyList<BaseItem> GetInstantMixFromGenres(IEnumerable<ReferencedItemModel> genres, User? user, DtoOptions dtoOptions)
         {
-            var genreIds = genres.DistinctNames().Select(i =>
-            {
-                try
-                {
-                    return _libraryManager.GetMusicGenre(i).Id;
-                }
-                catch
-                {
-                    return Guid.Empty;
-                }
-            }).Where(i => !i.IsEmpty()).ToArray();
-
-            return GetInstantMixFromGenreIds(genreIds, user, dtoOptions);
+            return GetInstantMixFromGenreIds([.. genres.Select(e => e.Id)], user, dtoOptions);
         }
 
         public IReadOnlyList<BaseItem> GetInstantMixFromGenreIds(Guid[] genreIds, User? user, DtoOptions dtoOptions)

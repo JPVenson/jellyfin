@@ -54,13 +54,13 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
             Assert.Equal("tt11111", item.ProviderIds[MetadataProvider.Imdb.ToString()]);
 
             Assert.Equal(3, item.Genres.Length);
-            Assert.Contains("Drama", item.Genres);
-            Assert.Contains("Mystery", item.Genres);
-            Assert.Contains("Sci-Fi & Fantasy", item.Genres);
+            Assert.Contains("Drama", item.Genres.Select(e => e.Name));
+            Assert.Contains("Mystery", item.Genres.Select(e => e.Name));
+            Assert.Contains("Sci-Fi & Fantasy", item.Genres.Select(e => e.Name));
 
             Assert.Equal(new DateTime(2017, 4, 30), item.PremiereDate);
             Assert.Single(item.Studios);
-            Assert.Contains("Starz", item.Studios);
+            Assert.Contains("Starz", item.Studios.Select(e => e.Name));
             Assert.Equal("9 PM", item.AirTime);
             Assert.Single(item.AirDays);
             Assert.Contains(DayOfWeek.Friday, item.AirDays);

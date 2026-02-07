@@ -213,7 +213,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (item.Id.IsEmpty())
             {
-                item.Id = LibraryManager.GetNewItemId(item.Path, item.GetType());
+                item.ExtRelId = LibraryManager.GetNewItemExtRelId(item.Path, item.GetType());
             }
 
             if (item.DateCreated == DateTime.MinValue)

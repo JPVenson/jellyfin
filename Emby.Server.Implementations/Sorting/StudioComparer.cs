@@ -28,7 +28,7 @@ namespace Emby.Server.Implementations.Sorting
             ArgumentNullException.ThrowIfNull(x);
             ArgumentNullException.ThrowIfNull(y);
 
-            return AlphanumericComparator.CompareValues(x.Studios.FirstOrDefault(), y.Studios.FirstOrDefault());
+            return AlphanumericComparator.CompareValues(x.Studios.FirstOrDefault()?.Name, y.Studios.FirstOrDefault()?.Name);
         }
     }
 }

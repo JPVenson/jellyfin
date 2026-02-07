@@ -83,6 +83,7 @@ namespace Emby.Server.Implementations.Library
         private readonly ExtraResolver _extraResolver;
         private readonly IPathManager _pathManager;
         private readonly FastConcurrentLru<Guid, BaseItem> _cache;
+        private readonly FastConcurrentLru<string, BaseItem> _extRelCache;
 
         /// <summary>
         /// The _root folder sync lock.
@@ -154,6 +155,7 @@ namespace Emby.Server.Implementations.Library
             _imageProcessor = imageProcessor;
 
             _cache = new FastConcurrentLru<Guid, BaseItem>(_configurationManager.Configuration.CacheSize);
+            _extRelCache = new FastConcurrentLru<string, BaseItem>(_configurationManager.Configuration.CacheSize);
 
             _namingOptions = namingOptions;
             _peopleRepository = peopleRepository;
@@ -311,6 +313,10 @@ namespace Emby.Server.Implementations.Library
             }
 
             _cache.AddOrUpdate(item.Id, item);
+            if (item.ExtRelId is not null)
+            {
+                _extRelCache.AddOrUpdate(item.ExtRelId, item);
+            }
         }
 
         public void DeleteItem(BaseItem item, DeleteOptions options)
@@ -452,9 +458,18 @@ namespace Emby.Server.Implementations.Library
 
             _itemRepository.DeleteItem([item.Id, .. children.Select(f => f.Id)]);
             _cache.TryRemove(item.Id, out _);
+            if (item.ExtRelId is not null)
+            {
+                _extRelCache.TryRemove(item.ExtRelId, out _);
+            }
+
             foreach (var child in children)
             {
                 _cache.TryRemove(child.Id, out _);
+                if (child.ExtRelId is not null)
+                {
+                    _extRelCache.TryRemove(child.ExtRelId, out _);
+                }
             }
 
             if (parent is Folder folder)
@@ -628,7 +643,12 @@ namespace Emby.Server.Implementations.Library
             }
         }
 
-        public Guid GetNewItemId(string key, Type type)
+        public string GetNewItemExtRelId(string key, Type type)
+        {
+            return GetNewItemIdInternal(key, type, false).ToString("N");
+        }
+
+        public Guid GetNewItemExtRelGuid(string key, Type type)
         {
             return GetNewItemIdInternal(key, type, false);
         }
@@ -839,7 +859,7 @@ namespace Emby.Server.Implementations.Library
         {
             var rootFolderPath = _configurationManager.ApplicationPaths.RootFolderPath;
 
-            var rootFolder = GetItemById(GetNewItemId(rootFolderPath, typeof(AggregateFolder))) as AggregateFolder ??
+            var rootFolder = GetItemByExtRelId(GetNewItemExtRelId(rootFolderPath, typeof(AggregateFolder))) as AggregateFolder ??
                              (ResolvePath(_fileSystem.GetDirectoryInfo(rootFolderPath)) as Folder ?? throw new InvalidOperationException("Something went very wong"))
                              .DeepCopy<Folder, AggregateFolder>();
 
@@ -861,9 +881,9 @@ namespace Emby.Server.Implementations.Library
                 DateModified = info.LastWriteTimeUtc,
             };
 
-            if (folder.Id.IsEmpty())
+            if (string.IsNullOrWhiteSpace(folder.ExtRelId))
             {
-                folder.Id = GetNewItemId(folder.Path, folder.GetType());
+                folder.ExtRelId = GetNewItemExtRelId(folder.Path, folder.GetType());
             }
 
             var dbItem = GetItemById(folder.Id) as BasePluginFolder;
@@ -900,11 +920,11 @@ namespace Emby.Server.Implementations.Library
                         _logger.LogDebug("Creating userRootPath at {Path}", userRootPath);
                         Directory.CreateDirectory(userRootPath);
 
-                        var newItemId = GetNewItemId(userRootPath, typeof(UserRootFolder));
+                        var newItemId = GetNewItemExtRelId(userRootPath, typeof(UserRootFolder));
                         UserRootFolder? tmpItem = null;
                         try
                         {
-                            tmpItem = GetItemById(newItemId) as UserRootFolder;
+                            tmpItem = GetItemByExtRelId(newItemId) as UserRootFolder;
                         }
                         catch (Exception ex)
                         {
@@ -959,7 +979,7 @@ namespace Emby.Server.Implementations.Library
         {
             var path = Person.GetPath(name);
             var id = GetItemByNameId<Person>(path);
-            if (GetItemById(id) is Person item)
+            if (GetItemByExtRelId(id) is Person item)
             {
                 return item;
             }
@@ -977,17 +997,17 @@ namespace Emby.Server.Implementations.Library
             return CreateItemByName<Studio>(Studio.GetPath, name, new DtoOptions(true));
         }
 
-        public Guid GetStudioId(string name)
+        public string GetStudioExtRelId(string name)
         {
             return GetItemByNameId<Studio>(Studio.GetPath(name));
         }
 
-        public Guid GetGenreId(string name)
+        public string GetGenreExtRelId(string name)
         {
             return GetItemByNameId<Genre>(Genre.GetPath(name));
         }
 
-        public Guid GetMusicGenreId(string name)
+        public string GetMusicGenreExtRelId(string name)
         {
             return GetItemByNameId<MusicGenre>(MusicGenre.GetPath(name));
         }
@@ -1073,14 +1093,14 @@ namespace Emby.Server.Implementations.Library
 
             var path = getPathFn(name);
             var id = GetItemByNameId<T>(path);
-            var item = GetItemById(id) as T;
+            var item = GetItemByExtRelId(id) as T;
             if (item is null)
             {
                 var info = Directory.CreateDirectory(path);
                 item = new T
                 {
                     Name = name,
-                    Id = id,
+                    ExtRelId = id,
                     DateCreated = info.CreationTimeUtc,
                     DateModified = info.LastWriteTimeUtc,
                     Path = path
@@ -1092,11 +1112,11 @@ namespace Emby.Server.Implementations.Library
             return item;
         }
 
-        private Guid GetItemByNameId<T>(string path)
+        private string GetItemByNameId<T>(string path)
               where T : BaseItem, new()
         {
             var forceCaseInsensitiveId = _configurationManager.Configuration.EnableNormalizedItemByNameIds;
-            return GetNewItemIdInternal(path, typeof(T), forceCaseInsensitiveId);
+            return GetNewItemIdInternal(path, typeof(T), forceCaseInsensitiveId).ToString("N");
         }
 
         /// <inheritdoc />
@@ -1367,6 +1387,24 @@ namespace Emby.Server.Implementations.Library
             }
 
             item = RetrieveItem(id);
+
+            if (item is not null)
+            {
+                RegisterItem(item);
+            }
+
+            return item;
+        }
+
+        /// <inheritdoc />
+        public BaseItem? GetItemByExtRelId(string extRelId)
+        {
+            if (_extRelCache.TryGet(extRelId, out var item))
+            {
+                return item;
+            }
+
+            item = RetrieveItem(extRelId);
 
             if (item is not null)
             {
@@ -2248,6 +2286,16 @@ namespace Emby.Server.Implementations.Library
             return _itemRepository.RetrieveItem(id);
         }
 
+        /// <summary>
+        /// Retrieves the item based on the extrel id.
+        /// </summary>
+        /// <param name="extRelId">The id.</param>
+        /// <returns>BaseItem.</returns>
+        public BaseItem RetrieveItem(string extRelId)
+        {
+            return _itemRepository.RetrieveItem(extRelId);
+        }
+
         public List<Folder> GetCollectionFolders(BaseItem item)
         {
             return GetCollectionFolders(item, GetUserRootFolder().Children.OfType<Folder>());
@@ -2419,9 +2467,9 @@ namespace Emby.Server.Implementations.Library
                 "views",
                 _fileSystem.GetValidFilename(viewType.ToString()));
 
-            var id = GetNewItemId(path + "_namedview_" + name, typeof(UserView));
+            var id = GetNewItemExtRelId(path + "_namedview_" + name, typeof(UserView));
 
-            var item = GetItemById(id) as UserView;
+            var item = GetItemByExtRelId(id) as UserView;
 
             var refresh = false;
 
@@ -2431,7 +2479,7 @@ namespace Emby.Server.Implementations.Library
                 item = new UserView
                 {
                     Path = path,
-                    Id = id,
+                    ExtRelId = id,
                     DateCreated = info.CreationTimeUtc,
                     DateModified = info.LastWriteTimeUtc,
                     Name = name,
@@ -2465,11 +2513,11 @@ namespace Emby.Server.Implementations.Library
                 : parentId.ToString("N", CultureInfo.InvariantCulture);
             var idValues = "38_namedview_" + name + user.Id.ToString("N", CultureInfo.InvariantCulture) + (parentIdString ?? string.Empty) + (viewType?.ToString() ?? string.Empty);
 
-            var id = GetNewItemId(idValues, typeof(UserView));
+            var id = GetNewItemExtRelId(idValues, typeof(UserView));
 
-            var path = Path.Combine(_configurationManager.ApplicationPaths.InternalMetadataPath, "views", id.ToString("N", CultureInfo.InvariantCulture));
+            var path = Path.Combine(_configurationManager.ApplicationPaths.InternalMetadataPath, "views", id);
 
-            var item = GetItemById(id) as UserView;
+            var item = GetItemByExtRelId(id) as UserView;
 
             var isNew = false;
 
@@ -2479,7 +2527,7 @@ namespace Emby.Server.Implementations.Library
                 item = new UserView
                 {
                     Path = path,
-                    Id = id,
+                    ExtRelId = id,
                     DateCreated = info.CreationTimeUtc,
                     DateModified = info.LastWriteTimeUtc,
                     Name = name,
@@ -2530,11 +2578,11 @@ namespace Emby.Server.Implementations.Library
 
             var idValues = "38_namedview_" + name + parentId + (viewType?.ToString() ?? string.Empty);
 
-            var id = GetNewItemId(idValues, typeof(UserView));
+            var id = GetNewItemExtRelId(idValues, typeof(UserView));
 
             var path = parent.Path;
 
-            var item = GetItemById(id) as UserView;
+            var item = GetItemByExtRelId(id) as UserView;
 
             var isNew = false;
 
@@ -2544,7 +2592,7 @@ namespace Emby.Server.Implementations.Library
                 item = new UserView
                 {
                     Path = path,
-                    Id = id,
+                    ExtRelId = id,
                     DateCreated = info.CreationTimeUtc,
                     DateModified = info.LastWriteTimeUtc,
                     Name = name,
@@ -2600,11 +2648,11 @@ namespace Emby.Server.Implementations.Library
                 idValues += uniqueId;
             }
 
-            var id = GetNewItemId(idValues, typeof(UserView));
+            var id = GetNewItemExtRelId(idValues, typeof(UserView));
 
-            var path = Path.Combine(_configurationManager.ApplicationPaths.InternalMetadataPath, "views", id.ToString("N", CultureInfo.InvariantCulture));
+            var path = Path.Combine(_configurationManager.ApplicationPaths.InternalMetadataPath, "views", id);
 
-            var item = GetItemById(id) as UserView;
+            var item = GetItemByExtRelId(id) as UserView;
 
             var isNew = false;
 
@@ -2614,7 +2662,7 @@ namespace Emby.Server.Implementations.Library
                 item = new UserView
                 {
                     Path = path,
-                    Id = id,
+                    ExtRelId = id,
                     DateCreated = info.CreationTimeUtc,
                     DateModified = info.LastWriteTimeUtc,
                     Name = name,
@@ -3107,7 +3155,7 @@ namespace Emby.Server.Implementations.Library
                         personEntity = new Person()
                         {
                             Name = person.Name,
-                            Id = GetItemByNameId<Person>(path),
+                            ExtRelId = GetItemByNameId<Person>(path),
                             DateCreated = info.CreationTimeUtc,
                             DateModified = info.LastWriteTimeUtc,
                             Path = path

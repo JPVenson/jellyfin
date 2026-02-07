@@ -605,7 +605,7 @@ namespace Jellyfin.LiveTv
         {
             var query = new InternalItemsQuery
             {
-                ItemIds = [_tvDtoService.GetInternalProgramId(programId)],
+                ExtRelIds = [_tvDtoService.GetInternalProgramId(programId).ToString("N")],
                 Limit = 1,
                 DtoOptions = new DtoOptions()
             };

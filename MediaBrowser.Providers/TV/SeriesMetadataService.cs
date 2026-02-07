@@ -259,7 +259,7 @@ public class SeriesMetadataService : MetadataService<Series, SeriesInfo>
         {
             Name = seasonName,
             IndexNumber = seasonNumber,
-            Id = LibraryManager.GetNewItemId(
+            ExtRelId = LibraryManager.GetNewItemExtRelId(
                 series.Id + (seasonNumber ?? -1).ToString(CultureInfo.InvariantCulture) + seasonName,
                 typeof(Season)),
             IsVirtualItem = false,

@@ -249,7 +249,12 @@ public class ItemUpdateController : BaseJellyfinApiController
         item.IndexNumber = request.IndexNumber;
         item.ParentIndexNumber = request.ParentIndexNumber;
         item.Overview = request.Overview;
-        item.Genres = request.Genres;
+        item.Genres = [.. request.Genres.Select(e => new ReferencedItemModel()
+        {
+            ExtRelid = e.Name,
+            Id = e.Id,
+            Name = e.Name
+        })];
 
         if (item is Episode episode)
         {
@@ -270,7 +275,12 @@ public class ItemUpdateController : BaseJellyfinApiController
 
         if (request.Studios is not null)
         {
-            item.Studios = Array.ConvertAll(request.Studios, x => x.Name);
+            item.Studios = Array.ConvertAll(request.Studios, x => new ReferencedItemModel()
+            {
+                ExtRelid = x.ExtRelid,
+                Id = x.Id,
+                Name = x.Name
+            });
         }
 
         if (request.DateCreated.HasValue)

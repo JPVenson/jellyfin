@@ -548,10 +548,10 @@ namespace MediaBrowser.Providers.Manager
                 var currentList = item.Genres;
 
                 item.Genres = children.SelectMany(i => i.Genres)
-                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .Distinct()
                     .ToArray();
 
-                if (currentList.Length != item.Genres.Length || !currentList.Order().SequenceEqual(item.Genres.Order(), StringComparer.OrdinalIgnoreCase))
+                if (currentList.Length != item.Genres.Length || !currentList.Order().SequenceEqual(item.Genres.Order()))
                 {
                     updateType |= ItemUpdateType.MetadataEdit;
                 }
@@ -569,10 +569,10 @@ namespace MediaBrowser.Providers.Manager
                 var currentList = item.Studios;
 
                 item.Studios = children.SelectMany(i => i.Studios)
-                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .Distinct()
                     .ToArray();
 
-                if (currentList.Length != item.Studios.Length || !currentList.Order().SequenceEqual(item.Studios.Order(), StringComparer.OrdinalIgnoreCase))
+                if (currentList.Length != item.Studios.Length || !currentList.Order().SequenceEqual(item.Studios.Order()))
                 {
                     updateType |= ItemUpdateType.MetadataEdit;
                 }
@@ -747,6 +747,7 @@ namespace MediaBrowser.Providers.Manager
             };
             temp.Item.Path = item.Path;
             temp.Item.Id = item.Id;
+            temp.Item.ExtRelId = item.ExtRelId;
             temp.Item.ParentIndexNumber = item.ParentIndexNumber;
             temp.Item.PreferredMetadataCountryCode = item.PreferredMetadataCountryCode;
             temp.Item.PreferredMetadataLanguage = item.PreferredMetadataLanguage;
@@ -1113,7 +1114,7 @@ namespace MediaBrowser.Providers.Manager
                 }
                 else
                 {
-                    target.Studios = target.Studios.Concat(source.Studios).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+                    target.Studios = target.Studios.Concat(source.Studios).Distinct().ToArray();
                 }
             }
 

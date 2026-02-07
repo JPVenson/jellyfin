@@ -61,7 +61,7 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
             Assert.Equal("a3cb23fc-acd3-4ce0-8f36-1e5aa6a18432", item.ProviderIds[MetadataProvider.MusicBrainzArtist.ToString()]);
 
             Assert.Single(item.Genres);
-            Assert.Equal("Rock", item.Genres[0]);
+            Assert.Equal("Rock", item.Genres[0].Name);
         }
 
         [Fact]

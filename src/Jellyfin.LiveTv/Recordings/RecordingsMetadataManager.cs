@@ -184,7 +184,7 @@ public class RecordingsMetadataManager
 
                 foreach (var genre in timer.Genres)
                 {
-                    await writer.WriteElementStringAsync(null, "genre", null, genre).ConfigureAwait(false);
+                    await writer.WriteElementStringAsync(null, "genre", null, genre.Name).ConfigureAwait(false);
                 }
 
                 await writer.WriteEndElementAsync().ConfigureAwait(false);
@@ -313,7 +313,7 @@ public class RecordingsMetadataManager
 
                 foreach (var genre in item.Genres)
                 {
-                    await writer.WriteElementStringAsync(null, "genre", null, genre).ConfigureAwait(false);
+                    await writer.WriteElementStringAsync(null, "genre", null, genre.Name).ConfigureAwait(false);
                 }
 
                 var people = item.Id.IsEmpty() ? new List<PersonInfo>() : _libraryManager.GetPeople(item);
@@ -395,7 +395,7 @@ public class RecordingsMetadataManager
 
                 foreach (var studio in item.Studios)
                 {
-                    await writer.WriteElementStringAsync(null, "studio", null, studio).ConfigureAwait(false);
+                    await writer.WriteElementStringAsync(null, "studio", null, studio.Name).ConfigureAwait(false);
                 }
 
                 await writer.WriteEndElementAsync().ConfigureAwait(false);

@@ -308,7 +308,7 @@ namespace Emby.Server.Implementations.Collections
         /// <inheritdoc />
         public IEnumerable<BaseItem> CollapseItemsWithinBoxSets(IEnumerable<BaseItem> items, User user)
         {
-            var results = new Dictionary<Guid, BaseItem>();
+            var results = new Dictionary<string, BaseItem>();
 
             var allBoxSets = GetCollections(user).ToList();
 
@@ -328,7 +328,7 @@ namespace Emby.Server.Implementations.Collections
 
                         itemIsInBoxSet = true;
 
-                        results.TryAdd(boxSet.Id, boxSet);
+                        results.TryAdd(boxSet.ExtRelId, boxSet);
                     }
 
                     // skip any item that is in a box set
@@ -360,7 +360,7 @@ namespace Emby.Server.Implementations.Collections
                     }
                 }
 
-                results[item.Id] = item;
+                results[item.ExtRelId] = item;
             }
 
             return results.Values;

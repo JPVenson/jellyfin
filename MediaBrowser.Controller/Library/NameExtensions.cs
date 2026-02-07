@@ -12,7 +12,7 @@ namespace MediaBrowser.Controller.Library
         public static IEnumerable<string> DistinctNames(this IEnumerable<string> names)
             => names.DistinctBy(RemoveDiacritics, StringComparer.OrdinalIgnoreCase);
 
-        private static string RemoveDiacritics(string? name)
+        public static string RemoveDiacritics(string? name)
         {
             if (name is null)
             {

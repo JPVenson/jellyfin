@@ -359,14 +359,14 @@ namespace MediaBrowser.Controller.Entities
             return base.CanDelete();
         }
 
-        public IEnumerable<Guid> GetAdditionalPartIds()
+        public IEnumerable<string> GetAdditionalPartIds()
         {
-            return AdditionalParts.Select(i => LibraryManager.GetNewItemId(i, typeof(Video)));
+            return AdditionalParts.Select(i => LibraryManager.GetNewItemExtRelId(i, typeof(Video)));
         }
 
-        public IEnumerable<Guid> GetLocalAlternateVersionIds()
+        public IEnumerable<string> GetLocalAlternateVersionIds()
         {
-            return LocalAlternateVersions.Select(i => LibraryManager.GetNewItemId(i, typeof(Video)));
+            return LocalAlternateVersions.Select(i => LibraryManager.GetNewItemExtRelId(i, typeof(Video)));
         }
 
         private string GetUserDataKey(string providerId)
@@ -398,7 +398,7 @@ namespace MediaBrowser.Controller.Entities
         public IOrderedEnumerable<Video> GetAdditionalParts()
         {
             return GetAdditionalPartIds()
-                .Select(i => LibraryManager.GetItemById(i))
+                .Select(i => LibraryManager.GetItemByExtRelId(i))
                 .Where(i => i is not null)
                 .OfType<Video>()
                 .OrderBy(i => i.SortName);
@@ -481,7 +481,7 @@ namespace MediaBrowser.Controller.Entities
             await base.UpdateToRepositoryAsync(updateReason, cancellationToken).ConfigureAwait(false);
 
             var localAlternates = GetLocalAlternateVersionIds()
-                .Select(i => LibraryManager.GetItemById(i))
+                .Select(i => LibraryManager.GetItemByExtRelId(i))
                 .Where(i => i is not null);
 
             foreach (var item in localAlternates)
@@ -552,9 +552,9 @@ namespace MediaBrowser.Controller.Entities
             var localAlternates = list
                 .SelectMany(i =>
                 {
-                    return i.Item1 is Video video ? video.GetLocalAlternateVersionIds() : Enumerable.Empty<Guid>();
+                    return i.Item1 is Video video ? video.GetLocalAlternateVersionIds() : Enumerable.Empty<string>();
                 })
-                .Select(LibraryManager.GetItemById)
+                .Select(LibraryManager.GetItemByExtRelId)
                 .Where(i => i is not null)
                 .ToList();
 

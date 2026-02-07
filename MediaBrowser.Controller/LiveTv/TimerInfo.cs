@@ -14,7 +14,7 @@ namespace MediaBrowser.Controller.LiveTv
     {
         public TimerInfo()
         {
-            Genres = Array.Empty<string>();
+            Genres = [];
             KeepUntil = KeepUntil.UntilDeleted;
             ProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             SeriesProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
@@ -157,7 +157,7 @@ namespace MediaBrowser.Controller.LiveTv
 
         public string OfficialRating { get; set; }
 
-        public string[] Genres { get; set; }
+        public ReferencedItemModel[] Genres { get; set; }
 
         public string RecordingPath { get; set; }
 

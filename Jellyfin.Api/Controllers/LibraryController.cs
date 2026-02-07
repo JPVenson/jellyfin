@@ -789,7 +789,7 @@ public class LibraryController : BaseJellyfinApiController
 
         var query = new InternalItemsQuery(user)
         {
-            Genres = item.Genres,
+            GenreIds = [.. item.Genres.Select(e => e.Id)],
             Tags = item.Tags,
             Limit = limit,
             IncludeItemTypes = includeItemTypes.ToArray(),

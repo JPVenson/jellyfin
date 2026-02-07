@@ -252,12 +252,12 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
             if (seriesResult.Networks is not null)
             {
-                series.Studios = seriesResult.Networks.Select(i => i.Name).ToArray();
+                series.Studios = seriesResult.Networks.Select(i => new ReferencedItemModel() { Name = i.Name }).ToArray();
             }
 
             if (seriesResult.Genres is not null)
             {
-                series.Genres = seriesResult.Genres.Select(i => i.Name).ToArray();
+                series.Genres = seriesResult.Genres.Select(i => new ReferencedItemModel() { Name = i.Name }).ToArray();
             }
 
             if (seriesResult.Keywords?.Results is not null)

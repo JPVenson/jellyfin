@@ -39,6 +39,7 @@ namespace MediaBrowser.Controller.Entities
             ImageTypes = Array.Empty<ImageType>();
             IncludeItemTypes = Array.Empty<BaseItemKind>();
             ItemIds = Array.Empty<Guid>();
+            ExtRelIds = Array.Empty<string>();
             MediaTypes = Array.Empty<MediaType>();
             OfficialRatings = Array.Empty<string>();
             OrderBy = Array.Empty<(ItemSortBy, SortOrder)>();
@@ -132,6 +133,11 @@ namespace MediaBrowser.Controller.Entities
         public Guid[] PersonIds { get; set; }
 
         public Guid[] ItemIds { get; set; }
+
+        /// <summary>
+        /// Gets or Sets the filter for the specified external relationship Ids.
+        /// </summary>
+        public string[] ExtRelIds { get; set; }
 
         public Guid[] ExcludeItemIds { get; set; }
 

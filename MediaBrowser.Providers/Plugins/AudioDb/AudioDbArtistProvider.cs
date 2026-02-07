@@ -90,7 +90,7 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
 
             if (!string.IsNullOrEmpty(result.strGenre))
             {
-                item.Genres = new[] { result.strGenre };
+                item.Genres = [new() { Name = result.strGenre }];
             }
 
             item.SetProviderId(MetadataProvider.AudioDbArtist, result.idArtist);

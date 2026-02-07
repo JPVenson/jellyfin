@@ -184,7 +184,7 @@ public class InstantMixController : BaseJellyfinApiController
     /// <summary>
     /// Creates an instant playlist based on a given genre.
     /// </summary>
-    /// <param name="name">The genre name.</param>
+    /// <param name="genreId">The genre id.</param>
     /// <param name="userId">Optional. Filter by user id, and attach user data.</param>
     /// <param name="limit">Optional. The maximum number of records to return.</param>
     /// <param name="fields">Optional. Specify additional fields of information to return in the output.</param>
@@ -197,7 +197,7 @@ public class InstantMixController : BaseJellyfinApiController
     [HttpGet("MusicGenres/{name}/InstantMix")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public ActionResult<QueryResult<BaseItemDto>> GetInstantMixFromMusicGenreByName(
-        [FromRoute, Required] string name,
+        [FromRoute, Required] Guid genreId,
         [FromQuery] Guid? userId,
         [FromQuery] int? limit,
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] ItemFields[] fields,
@@ -212,7 +212,7 @@ public class InstantMixController : BaseJellyfinApiController
             : _userManager.GetUserById(userId.Value);
         var dtoOptions = new DtoOptions { Fields = fields }
             .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
-        var items = _musicManager.GetInstantMixFromGenres(new[] { name }, user, dtoOptions);
+        var items = _musicManager.GetInstantMixFromGenres([new() { Id = genreId }], user, dtoOptions);
         return GetResult(items, user, limit, dtoOptions);
     }
 

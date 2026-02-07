@@ -31,7 +31,12 @@ public class BaseItemConfiguration : IEntityTypeConfiguration<BaseItemEntity>
         builder.HasMany(e => e.LockedFields);
         builder.HasMany(e => e.TrailerTypes);
         builder.HasMany(e => e.Images);
+        builder.HasMany(e => e.Studios).WithOne(e => e.Child).HasForeignKey(e => e.ChildId);
+        builder.HasMany(e => e.Genres).WithOne(e => e.Child).HasForeignKey(e => e.ChildId);
+        builder.HasMany(e => e.StudioChildren).WithOne(e => e.Studio).HasForeignKey(e => e.StudioId);
+        builder.HasMany(e => e.GenresChildren).WithOne(e => e.Genre).HasForeignKey(e => e.GenreId);
 
+        builder.HasIndex(e => e.ExtRelId);
         builder.HasIndex(e => e.Path);
         builder.HasIndex(e => e.ParentId);
         builder.HasIndex(e => e.PresentationUniqueKey);
