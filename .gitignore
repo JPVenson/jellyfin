@@ -278,3 +278,5 @@ apiclient/generated
 
 # Omnisharp crash logs
 mono_crash.*.json
+dotnet/*
+.devcontainer/devcontainer-lock.json
